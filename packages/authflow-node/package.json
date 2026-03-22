@@ -1,0 +1,44 @@
+{
+  "name": "@meet_patel_12/authflow-node",
+  "version": "0.1.0",
+  "description": "AuthFlow server-side SDK — token exchange and verification for Next.js and Express",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "keywords": [
+    "authflow",
+    "oauth2",
+    "oidc",
+    "node",
+    "nextjs",
+    "express",
+    "server"
+  ],
+  "license": "MIT",
+  "sideEffects": false
+}

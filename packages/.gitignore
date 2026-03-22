@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Build output — don't commit dist, always build fresh
+dist/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+*.log

@@ -1,0 +1,7 @@
+{
+  "name": "authflow",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}
