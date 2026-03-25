@@ -243,6 +243,32 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+
+    setUserFromToken: (
+      state,
+      action: PayloadAction<{
+        userId: string;
+        email: string;
+        role: "admin" | "owner" | "user" | "member";
+        organizationId: string;
+      }>,
+    ) => {
+      // Set user from JWT token (fast, no API call needed)
+      if (!state.user) {
+        state.user = {
+          id: action.payload.userId,
+          email: action.payload.email,
+          role: action.payload.role,
+          organizationId: action.payload.organizationId,
+          mfaEnabled: false,
+          emailVerified: false,
+          // Other fields will be populated by getCurrentUser API call
+        } as User;
+        state.organization = {
+          id: action.payload.organizationId,
+        } as Organization;
+      }
+    },
   },
 
   extraReducers: (builder) => {
@@ -361,5 +387,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, clearError } = authSlice.actions;
+export const { setCredentials, clearError, setUserFromToken } =
+  authSlice.actions;
 export default authSlice.reducer;

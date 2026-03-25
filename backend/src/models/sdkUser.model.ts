@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 
 export interface ISDKUser extends Document {
   organizationId: mongoose.Types.ObjectId;
+  applicationId: mongoose.Types.ObjectId;
   email: string;
   password?: string;
   name: string;
@@ -28,6 +29,12 @@ const sdkUserSchema = new Schema<ISDKUser>(
       required: true,
       index: true,
     },
+    applicationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Application",
+      required: true,
+      index: true,
+    },
     email: { type: String, required: true, lowercase: true, trim: true },
     password: { type: String, select: false },
     name: { type: String, required: true, trim: true },
@@ -41,8 +48,11 @@ const sdkUserSchema = new Schema<ISDKUser>(
   { timestamps: true },
 );
 
-// Email unique per org — two orgs can share the same email address
-sdkUserSchema.index({ organizationId: 1, email: 1 }, { unique: true });
+// Email unique per app — two apps can share the same email address
+sdkUserSchema.index(
+  { organizationId: 1, applicationId: 1, email: 1 },
+  { unique: true },
+);
 
 sdkUserSchema.pre("save", async function () {
   if (!this.isModified("password") || !this.password) return;

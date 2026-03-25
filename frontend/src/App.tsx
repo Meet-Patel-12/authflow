@@ -3,7 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "./app/hooks";
-import { getCurrentUser } from "./features/auth/authSlice";
+import { getCurrentUser, setUserFromToken } from "./features/auth/authSlice";
+import { getUserFromToken } from "./app/jwtUtils";
 import { fetchOrganizations } from "./features/organizations/organizationSlice";
 
 import ProtectedRoute from "./app/ProtectedRoute";
@@ -28,7 +29,7 @@ import Organizations from "./features/organizations/pages/Organizations";
 import ApiKeys from "./features/apiKeys/pages/ApiKeys";
 import MFASetup from "./features/mfa/pages/MFASetup";
 import AuditLogs from "./features/auditLogs/pages/AuditLogs";
-import Analytics from "./features/analytics/pages/Analytics";
+import SDKAnalytics from "./features/sdkAnalytics/pages/SDKAnalytics";
 import Members from "./features/organizations/pages/Members";
 import AcceptInvite from "./features/organizations/pages/AcceptInvite";
 import DeveloperIntegration from "./features/developers/pages/DeveloperIntegration";
@@ -38,12 +39,13 @@ import ApplicationDetail from "./features/application/pages/ApplicationDetail";
 
 // ── Universal Login (OAuth2 hosted pages — standalone, no DashboardLayout)
 import UniversalLogin from "./features/universalLogin/pages/UniversalLogin";
+import HomePage from "./features/home/HomePage";
 import UniversalSignup from "./features/universalLogin/pages/UniversalSignup";
 import LoginCallback from "./features/universalLogin/pages/LoginCallback";
 
 /* Admin */
 import AdminDashboard from "./features/admin/pages/Dashboard";
-import AdminUsers from "./features/admin/pages/Users";
+import AdminUsers from "./features/admin/pages/ApplicationUsers";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -52,6 +54,13 @@ function App() {
 
   useEffect(() => {
     if (accessToken) {
+      // ✅ First: Decode JWT and set user immediately (no API call needed)
+      const userFromToken = getUserFromToken(accessToken);
+      if (userFromToken && !user) {
+        dispatch(setUserFromToken(userFromToken));
+      }
+
+      // Then: Fetch full user data + organizations
       if (!user) dispatch(getCurrentUser());
       if (organizations.length === 0) dispatch(fetchOrganizations());
     }
@@ -313,14 +322,6 @@ function App() {
             }
           />
           <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute requireAdmin>
-                <Analytics />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/audit-logs"
             element={
               <ProtectedRoute requireAdmin>
@@ -328,17 +329,20 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/sdk-analytics"
+            element={
+              <ProtectedRoute requireAdmin>
+                <SDKAnalytics />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
-        {/* ── DEFAULT ── */}
+        {/* ── HOME ── */}
         <Route
           path="/"
-          element={
-            <Navigate
-              to="/dashboard"
-              replace
-            />
-          }
+          element={<HomePage />}
         />
         <Route
           path="*"

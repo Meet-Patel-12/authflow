@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -121,7 +121,8 @@ const LoginCallback = ({
         const tokens: CallbackTokens = await res.json();
         setStatus("success");
         onSuccess?.(tokens);
-      } catch (err: any) {
+      } catch (e) {
+        const err = e as { message?: string };
         const msg = err?.message ?? "Token exchange failed.";
         setErrorMessage(msg);
         setStatus("error");
@@ -136,10 +137,42 @@ const LoginCallback = ({
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-sm text-gray-500">Completing sign in...</p>
+      <div
+        className="min-h-screen flex items-center justify-center p-4 animate-fade-in"
+        style={{
+          background:
+            "linear-gradient(135deg, var(--bg-base) 0%, rgba(99,102,241,0.05) 100%)",
+        }}>
+        <div
+          className="rounded-2xl p-8 text-center max-w-sm w-full animate-slide-up"
+          style={{
+            background: "var(--bg-elevated)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+          }}>
+          <div className="flex justify-center mb-6">
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))",
+              }}>
+              <Loader
+                className="w-6 h-6 animate-spin"
+                style={{ color: "#6366f1" }}
+              />
+            </div>
+          </div>
+          <p
+            className="text-sm font-medium"
+            style={{ color: "var(--text-primary)" }}>
+            Completing sign in...
+          </p>
+          <p
+            className="text-xs mt-2"
+            style={{ color: "var(--text-muted)" }}>
+            Please wait while we authenticate you
+          </p>
         </div>
       </div>
     );
@@ -149,15 +182,42 @@ const LoginCallback = ({
 
   if (status === "success") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="card max-w-sm w-full text-center">
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-6 h-6 text-green-600" />
+      <div
+        className="min-h-screen flex items-center justify-center p-4 animate-fade-in"
+        style={{
+          background:
+            "linear-gradient(135deg, var(--bg-base) 0%, rgba(16,185,129,0.05) 100%)",
+        }}>
+        <div
+          className="rounded-2xl p-8 text-center max-w-sm w-full animate-slide-up"
+          style={{
+            background: "var(--bg-elevated)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+          }}>
+          <div className="flex justify-center mb-6">
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(34,197,94,0.2))",
+              }}>
+              <CheckCircle
+                className="w-7 h-7"
+                style={{ color: "#10b981" }}
+              />
+            </div>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+          <h2
+            className="text-lg font-semibold mb-1"
+            style={{ color: "var(--text-primary)" }}>
             Signed in successfully
           </h2>
-          <p className="text-sm text-gray-500">Redirecting you now...</p>
+          <p
+            className="text-sm"
+            style={{ color: "var(--text-muted)" }}>
+            Redirecting you to your account...
+          </p>
         </div>
       </div>
     );
@@ -166,18 +226,56 @@ const LoginCallback = ({
   // ─── Error ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="card max-w-sm w-full text-center">
-        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="w-6 h-6 text-red-600" />
+    <div
+      className="min-h-screen flex items-center justify-center p-4 animate-fade-in"
+      style={{
+        background:
+          "linear-gradient(135deg, var(--bg-base) 0%, rgba(244,63,94,0.05) 100%)",
+      }}>
+      <div
+        className="rounded-2xl p-8 text-center max-w-sm w-full animate-slide-up"
+        style={{
+          background: "var(--bg-elevated)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+        }}>
+        <div className="flex justify-center mb-6">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(244,63,94,0.2), rgba(239,68,68,0.2))",
+            }}>
+            <AlertCircle
+              className="w-7 h-7"
+              style={{ color: "#f43f5e" }}
+            />
+          </div>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">
+        <h2
+          className="text-lg font-semibold mb-2"
+          style={{ color: "var(--text-primary)" }}>
           Sign in failed
         </h2>
-        <p className="text-sm text-gray-500 mb-4">{errorMessage}</p>
+        <p
+          className="text-sm mb-6"
+          style={{ color: "var(--text-muted)" }}>
+          {errorMessage}
+        </p>
         <button
           onClick={() => window.history.back()}
-          className="btn btn-outline text-sm">
+          className="w-full px-4 py-2.5 rounded-lg font-medium transition-all duration-200"
+          style={{
+            background: "rgba(244,63,94,0.1)",
+            border: "1px solid rgba(244,63,94,0.2)",
+            color: "#f43f5e",
+          }}
+          onMouseEnter={(e) => {
+            (e.target as HTMLElement).style.background = "rgba(244,63,94,0.15)";
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLElement).style.background = "rgba(244,63,94,0.1)";
+          }}>
           Go back
         </button>
       </div>

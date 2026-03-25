@@ -1,5 +1,4 @@
 import express, { Application } from "express";
-import cors from "cors";
 import helmet from "helmet";
 import session from "express-session";
 import passport from "./config/passport";
@@ -7,6 +6,7 @@ import { auditLogger } from "./middlewares/audit.middleware";
 import { errorHandler } from "./middlewares/error.middleware";
 import { requestIdMiddleware } from "./middlewares/requestId.middleware";
 import { registerRoutes } from "./app.routes";
+import { findActiveApplicationByClientId } from "./repositories/application.repository";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
@@ -55,12 +55,13 @@ app.use(
 );
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-// In development: all origins allowed so developers can test from any localhost port.
-// In production: only origins in ALLOWED_ORIGINS + FRONTEND_URL are allowed.
-// Set ALLOWED_ORIGINS as a comma-separated list in your env vars to add more origins.
-// Example: ALLOWED_ORIGINS=https://app.yourdomain.com,https://other.yourdomain.com
+// Dynamic CORS configuration based on application settings.
+// - FRONTEND_URL is always allowed
+// - Application-specific allowed origins from the database (when client_id is provided)
+// - Localhost ports allowed in development
+// Clients specify their application via client_id query param, body, or X-Client-Id header
 
-const buildAllowedOrigins = (): string[] => {
+const getStaticAllowedOrigins = (): string[] => {
   const origins: string[] = [];
 
   if (process.env.ALLOWED_ORIGINS) {
@@ -85,27 +86,105 @@ const buildAllowedOrigins = (): string[] => {
   return [...new Set(origins)];
 };
 
-const allowedOrigins = buildAllowedOrigins();
+const staticAllowedOrigins = getStaticAllowedOrigins();
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      if (!IS_PRODUCTION) return callback(null, true);
-      callback(new Error(`CORS: origin '${origin}' is not allowed.`));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-API-Key",
-      "X-Organization-Id",
-      "X-Request-Id",
-    ],
-  }),
-);
+// Custom CORS handler with dynamic application-based validation
+const corsHandler = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  const origin = req.headers.origin;
+
+  // Continue if no origin (same-origin requests)
+  if (!origin) {
+    return next();
+  }
+
+  // Always allow static origins
+  if (staticAllowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    if (req.method === "OPTIONS") {
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
+      );
+      return res.sendStatus(204);
+    }
+    return next();
+  }
+
+  // Allow all origins in development
+  if (!IS_PRODUCTION) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    if (req.method === "OPTIONS") {
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
+      );
+      return res.sendStatus(204);
+    }
+    return next();
+  }
+
+  // Production: Check application-specific origins
+  try {
+    const clientId =
+      (req.query.client_id as string) ||
+      (req.query.clientId as string) ||
+      ((req.body as any)?.client_id as string) ||
+      ((req.body as any)?.clientId as string) ||
+      (req.headers["x-client-id"] as string);
+
+    if (clientId) {
+      const application = await findActiveApplicationByClientId(clientId);
+
+      if (
+        application &&
+        application.allowedOrigins &&
+        application.allowedOrigins.includes(origin)
+      ) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+
+        if (req.method === "OPTIONS") {
+          res.setHeader(
+            "Access-Control-Allow-Methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+          );
+          res.setHeader(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
+          );
+          return res.sendStatus(204);
+        }
+        return next();
+      }
+    }
+  } catch (err) {
+    console.error("Error validating CORS origin:", err);
+  }
+
+  // Origin not allowed
+  return res.status(403).json({
+    error: "CORS",
+    message: `Origin '${origin}' is not allowed. Please register this origin in your application settings.`,
+  });
+};
+
+app.use(corsHandler);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));

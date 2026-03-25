@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IAuditLog extends Document {
   organizationId: mongoose.Types.ObjectId;
+  applicationId?: mongoose.Types.ObjectId;
   userId?: mongoose.Types.ObjectId;
   action: string;
   resource: string;
@@ -22,6 +23,11 @@ const auditLogSchema = new Schema<IAuditLog>(
       type: Schema.Types.ObjectId,
       ref: "Organization",
       required: true,
+      index: true,
+    },
+    applicationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Application",
       index: true,
     },
     userId: { type: Schema.Types.ObjectId, ref: "User", index: true },
@@ -45,6 +51,7 @@ const auditLogSchema = new Schema<IAuditLog>(
 // ─── Indexes ──────────────────────────────────────────────────────────────────
 
 auditLogSchema.index({ organizationId: 1, createdAt: -1 });
+auditLogSchema.index({ organizationId: 1, applicationId: 1, createdAt: -1 });
 auditLogSchema.index({ organizationId: 1, userId: 1, createdAt: -1 });
 auditLogSchema.index({ organizationId: 1, action: 1, createdAt: -1 });
 

@@ -31,7 +31,7 @@ const Header = () => {
       setShowUserMenu(false);
       await dispatch(logout()).unwrap();
       toast.success("Signed out");
-      navigate("/login");
+      navigate("/");
     } catch {
       toast.error("Failed to sign out");
     }
