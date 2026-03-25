@@ -64,7 +64,7 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   const adminItems: NavItem[] = [
     { name: "Admin", path: "/admin", icon: Zap },
     { name: "Users", path: "/users", icon: Users },
-    { name: "Analytics", path: "/analytics", icon: BarChart3 },
+    { name: "SDK Analytics", path: "/sdk-analytics", icon: BarChart3 },
   ];
 
   const visible = navItems.filter((i) => !i.adminOnly || isAdmin);

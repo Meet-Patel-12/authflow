@@ -15,9 +15,12 @@ import {
   FileText,
   ArrowRight,
   Zap,
+  LogIn,
+  Globe,
 } from "lucide-react";
 import { adminService } from "../api/admin.api";
 import { applicationService } from "../../application/api/application.api";
+import { sdkAnalyticsService } from "../../sdkAnalytics/api/sdkAnalytics.api";
 import { PageSkeleton } from "../../../components/ui";
 
 interface Stats {
@@ -28,6 +31,14 @@ interface Stats {
   totalSessions: number;
   totalApiKeys: number;
   totalOrganizations: number;
+}
+
+interface SDKStats {
+  totalSDKUsers: number;
+  activeSDKUsers: number;
+  totalLogins: number;
+  newUsersToday: number;
+  newUsersThisMonth: number;
 }
 
 const StatCard = ({
@@ -133,27 +144,57 @@ const QuickNav = ({
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [sdkStats, setSDKStats] = useState<SDKStats | null>(null);
   const [appCount, setAppCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([adminService.getStats(), applicationService.getApplications()])
-      .then(([s, a]) => {
-        setStats(s.data || null);
-        setAppCount(a.data?.applications?.length ?? 0);
+    Promise.all([
+      adminService.getStats(),
+      applicationService.getApplications(),
+      sdkAnalyticsService.getAllApplicationsAnalytics(),
+    ])
+      .then(([platformStats, apps, allSDKAnalytics]) => {
+        setStats(platformStats.data || null);
+        setAppCount(apps.data?.applications?.length ?? 0);
+
+        // Aggregate SDK analytics from all applications
+        if (allSDKAnalytics.data && Array.isArray(allSDKAnalytics.data)) {
+          const aggregated = allSDKAnalytics.data.reduce(
+            (acc, app) => ({
+              totalSDKUsers: acc.totalSDKUsers + app.metrics.totalUsers,
+              activeSDKUsers: acc.activeSDKUsers + app.metrics.activeUsers,
+              totalLogins: acc.totalLogins + app.loginMetrics.totalLogins,
+              newUsersToday: acc.newUsersToday + app.metrics.newUsersToday,
+              newUsersThisMonth:
+                acc.newUsersThisMonth + app.metrics.newUsersThisMonth,
+            }),
+            {
+              totalSDKUsers: 0,
+              activeSDKUsers: 0,
+              totalLogins: 0,
+              newUsersToday: 0,
+              newUsersThisMonth: 0,
+            },
+          );
+          setSDKStats(aggregated);
+        }
       })
-      .catch(() => toast.error("Failed to load stats"))
+      .catch((err) => {
+        console.error("Failed to load stats:", err);
+        toast.error("Failed to load dashboard data");
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <PageSkeleton rows={6} />;
+  if (loading) return <PageSkeleton rows={8} />;
 
   const mfaPct = stats
     ? Math.round((stats.mfaEnabled / (stats.totalUsers || 1)) * 100)
     : 0;
 
   return (
-    <div className="max-w-6xl mx-auto animate-fade-in">
+    <div className="max-w-7xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="mb-8 flex items-center gap-3">
         <div
@@ -166,69 +207,124 @@ export default function AdminDashboard() {
         </div>
         <div>
           <h1 className="page-title">Admin Dashboard</h1>
-          <p className="page-subtitle">Platform overview and management</p>
+          <p className="page-subtitle">Platform overview and SDK analytics</p>
         </div>
       </div>
 
-      {/* Primary stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          icon={Users}
-          label="Total Users"
-          value={stats?.totalUsers || 0}
-          sub={`+${stats?.newUsersToday || 0} today`}
-          subUp
-          color="rgba(99,102,241,0.7)"
-          delay={0}
-        />
-        <StatCard
-          icon={UserCheck}
-          label="Active Users"
-          value={stats?.activeUsers || 0}
-          color="rgba(16,185,129,0.7)"
-          delay={50}
-        />
-        <StatCard
-          icon={Shield}
-          label="MFA Enabled"
-          value={`${mfaPct}%`}
-          sub={`${stats?.mfaEnabled || 0} users`}
-          subUp={mfaPct > 50}
-          color="rgba(6,182,212,0.7)"
-          delay={100}
-        />
-        <StatCard
-          icon={AppWindow}
-          label="Applications"
-          value={appCount}
-          color="rgba(245,158,11,0.7)"
-          delay={150}
-        />
+      {/* Platform Stats */}
+      <div className="mb-8">
+        <h2
+          className="text-sm font-semibold mb-4"
+          style={{ color: "var(--text-primary)" }}>
+          Platform Overview
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            icon={Users}
+            label="Platform Users"
+            value={stats?.totalUsers || 0}
+            sub={`+${stats?.newUsersToday || 0} today`}
+            subUp
+            color="rgba(99,102,241,0.7)"
+            delay={0}
+          />
+          <StatCard
+            icon={UserCheck}
+            label="Active Users"
+            value={stats?.activeUsers || 0}
+            color="rgba(16,185,129,0.7)"
+            delay={50}
+          />
+          <StatCard
+            icon={Shield}
+            label="MFA Enabled"
+            value={`${mfaPct}%`}
+            sub={`${stats?.mfaEnabled || 0} users`}
+            subUp={mfaPct > 50}
+            color="rgba(6,182,212,0.7)"
+            delay={100}
+          />
+          <StatCard
+            icon={AppWindow}
+            label="Applications"
+            value={appCount}
+            color="rgba(245,158,11,0.7)"
+            delay={150}
+          />
+        </div>
       </div>
 
-      {/* Secondary stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <StatCard
-          icon={Key}
-          label="API Keys"
-          value={stats?.totalApiKeys || 0}
-          color="rgba(244,63,94,0.7)"
-          delay={200}
-        />
-        <StatCard
-          icon={Activity}
-          label="Active Sessions"
-          value={stats?.totalSessions || 0}
-          color="rgba(139,92,246,0.7)"
-          delay={250}
-        />
-        <StatCard
-          icon={Building2}
-          label="Organizations"
-          value={stats?.totalOrganizations || 0}
-          color="rgba(236,72,153,0.7)"
-          delay={300}
-        />
+      {/* SDK Analytics Stats */}
+      <div className="mb-8">
+        <h2
+          className="text-sm font-semibold mb-4"
+          style={{ color: "var(--text-primary)" }}>
+          SDK User Analytics
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            icon={Users}
+            label="Total SDK Users"
+            value={sdkStats?.totalSDKUsers || 0}
+            sub={`+${sdkStats?.newUsersToday || 0} today`}
+            subUp
+            color="rgba(139,92,246,0.7)"
+            delay={0}
+          />
+          <StatCard
+            icon={UserCheck}
+            label="Active SDK Users"
+            value={sdkStats?.activeSDKUsers || 0}
+            color="rgba(34,197,94,0.7)"
+            delay={50}
+          />
+          <StatCard
+            icon={LogIn}
+            label="Total Logins"
+            value={sdkStats?.totalLogins || 0}
+            color="rgba(59,130,246,0.7)"
+            delay={100}
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="New This Month"
+            value={sdkStats?.newUsersThisMonth || 0}
+            color="rgba(236,72,153,0.7)"
+            delay={150}
+          />
+        </div>
+      </div>
+
+      {/* System Resources */}
+      <div className="mb-8">
+        <h2
+          className="text-sm font-semibold mb-4"
+          style={{ color: "var(--text-primary)" }}>
+          System Resources
+        </h2>
+        <div className="grid grid-cols-3 gap-4">
+          <StatCard
+            icon={Key}
+            label="API Keys"
+            value={stats?.totalApiKeys || 0}
+            color="rgba(244,63,94,0.7)"
+            delay={0}
+          />
+          <StatCard
+            icon={Activity}
+            label="Active Sessions"
+            value={stats?.totalSessions || 0}
+            color="rgba(139,92,246,0.7)"
+            delay={50}
+          />
+          <StatCard
+            icon={Building2}
+            label="Organizations"
+            value={stats?.totalOrganizations || 0}
+            color="rgba(236,72,153,0.7)"
+            delay={100}
+          />
+        </div>
       </div>
 
       {/* MFA adoption bar */}
@@ -244,13 +340,13 @@ export default function AdminDashboard() {
             <p
               className="text-sm font-semibold"
               style={{ color: "var(--text-primary)" }}>
-              MFA Adoption
+              MFA Adoption Rate
             </p>
             <p
               className="text-xs"
               style={{ color: "var(--text-muted)" }}>
-              {stats?.mfaEnabled || 0} of {stats?.totalUsers || 0} users have
-              enabled 2FA
+              {stats?.mfaEnabled || 0} of {stats?.totalUsers || 0} platform
+              users have enabled 2FA
             </p>
           </div>
           <span
@@ -293,16 +389,16 @@ export default function AdminDashboard() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <QuickNav
-            icon={Users}
-            label="Manage Users"
-            desc="View, suspend, update roles"
-            onClick={() => navigate("/users")}
+            icon={BarChart3}
+            label="SDK Analytics"
+            desc="User metrics and insights"
+            onClick={() => navigate("/sdk-analytics")}
           />
           <QuickNav
-            icon={BarChart3}
-            label="Analytics"
-            desc="Growth charts and exports"
-            onClick={() => navigate("/analytics")}
+            icon={Globe}
+            label="Applications"
+            desc="Manage developer apps"
+            onClick={() => navigate("/applications")}
           />
           <QuickNav
             icon={FileText}

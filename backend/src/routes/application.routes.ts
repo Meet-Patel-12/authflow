@@ -11,6 +11,14 @@ import {
   rotateSecretHandler,
   deleteApplicationHandler,
 } from "../controllers/application.controller";
+import {
+  getAppUsersHandler,
+  searchAppUsersHandler,
+  addUserToAppHandler,
+  removeUserFromAppHandler,
+  updateAppUserRoleHandler,
+  getAvailableUsersHandler,
+} from "../controllers/applicationMember.controller";
 
 const router = Router();
 
@@ -65,5 +73,31 @@ router.post(
   rotateSecretHandler,
 );
 router.delete("/:id", requireRole("owner", "admin"), deleteApplicationHandler);
+
+// ─── Application Members ──────────────────────────────────────────────────────
+
+router.get("/:appId/users", getAppUsersHandler);
+router.get("/:appId/users/search", searchAppUsersHandler);
+router.get("/:appId/available-users", getAvailableUsersHandler);
+router.post(
+  "/:appId/users",
+  requireRole("owner", "admin"),
+  body("userId").notEmpty().withMessage("userId is required"),
+  body("role").optional().isIn(["viewer", "editor", "admin"]),
+  validate,
+  addUserToAppHandler,
+);
+router.delete(
+  "/:appId/users/:userId",
+  requireRole("owner", "admin"),
+  removeUserFromAppHandler,
+);
+router.patch(
+  "/:appId/users/:userId",
+  requireRole("owner", "admin"),
+  body("role").isIn(["viewer", "editor", "admin"]).withMessage("Invalid role"),
+  validate,
+  updateAppUserRoleHandler,
+);
 
 export default router;

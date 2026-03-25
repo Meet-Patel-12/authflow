@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import type { AxiosError } from "axios";
 import {
   Lock,
   Mail,
@@ -11,6 +12,7 @@ import {
   EyeOff,
   WifiOff,
   RefreshCw,
+  ArrowRight,
 } from "lucide-react";
 import {
   fetchAppInfo,
@@ -75,22 +77,23 @@ const UniversalLogin = () => {
         setAppInfo(info);
         setIsLoadingApp(false);
       })
-      .catch((err: any) => {
+      .catch((err: AxiosError | unknown) => {
         setIsLoadingApp(false);
         // Distinguish network errors (backend down/unreachable/timeout)
         // from application errors (app not found, bad client_id)
+        const axiosErr = err as AxiosError & { code?: string };
         const isNetwork =
-          err?.code === "ERR_NETWORK" ||
-          err?.code === "ECONNABORTED" || // axios timeout
-          err?.code === "ERR_CANCELED" ||
-          !err?.response; // no response = no connection
+          axiosErr?.code === "ERR_NETWORK" ||
+          axiosErr?.code === "ECONNABORTED" || // axios timeout
+          axiosErr?.code === "ERR_CANCELED" ||
+          !axiosErr?.response; // no response = no connection
 
         if (isNetwork) {
           setAppErrorType("network");
           setAppError(
             "Unable to reach the authentication server. Please check your connection and try again.",
           );
-        } else if (err?.response?.status === 404) {
+        } else if (axiosErr?.response?.status === 404) {
           setAppErrorType("notfound");
           setAppError(
             "Application not found. This login link may be invalid or expired.",
@@ -120,10 +123,14 @@ const UniversalLogin = () => {
 
       // Redirect to the developer app's callback URL with the auth code
       window.location.href = result.redirectUrl;
-    } catch (err: any) {
+    } catch (err: AxiosError | unknown) {
+      const axiosErr = err as AxiosError<{
+        error_description?: string;
+        message?: string;
+      }>;
       const msg =
-        err?.response?.data?.error_description ??
-        err?.response?.data?.message ??
+        axiosErr?.response?.data?.error_description ??
+        axiosErr?.response?.data?.message ??
         "Login failed. Please check your credentials.";
       setServerError(msg);
     } finally {
@@ -136,27 +143,73 @@ const UniversalLogin = () => {
   if (appError) {
     const isNetwork = appErrorType === "network";
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="card max-w-md w-full text-center">
+      <div
+        className="min-h-screen flex items-center justify-center p-4 animate-fade-in"
+        style={{
+          background: `linear-gradient(135deg, var(--bg-base) 0%, ${
+            isNetwork ? "rgba(245,158,11,0.05)" : "rgba(244,63,94,0.05)"
+          } 100%)`,
+        }}>
+        <div
+          className="rounded-2xl p-8 max-w-md w-full text-center animate-slide-up"
+          style={{
+            background: "var(--bg-elevated)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+          }}>
           <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${isNetwork ? "bg-amber-100" : "bg-red-100"}`}>
+            className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{
+              background: isNetwork
+                ? "linear-gradient(135deg, rgba(245,158,11,0.2), rgba(251,191,36,0.2))"
+                : "linear-gradient(135deg, rgba(244,63,94,0.2), rgba(239,68,68,0.2))",
+            }}>
             {isNetwork ? (
-              <WifiOff className="w-6 h-6 text-amber-600" />
+              <WifiOff
+                className="w-6 h-6"
+                style={{ color: "#f59e0b" }}
+              />
             ) : (
-              <AlertCircle className="w-6 h-6 text-red-600" />
+              <AlertCircle
+                className="w-6 h-6"
+                style={{ color: "#f43f5e" }}
+              />
             )}
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2
+            className="text-lg font-semibold mb-2"
+            style={{ color: "var(--text-primary)" }}>
             {isNetwork ? "Connection failed" : "Invalid login link"}
           </h2>
-          <p className="text-sm text-gray-500 mb-5">{appError}</p>
+          <p
+            className="text-sm mb-5"
+            style={{ color: "var(--text-muted)" }}>
+            {appError}
+          </p>
           {isNetwork && (
             <button
               onClick={() => setRetryCount((c) => c + 1)}
               disabled={isLoadingApp}
-              className="btn btn-primary gap-2">
+              className="w-full px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              style={{
+                background: isLoadingApp
+                  ? "rgba(245,158,11,0.15)"
+                  : "rgba(245,158,11,0.1)",
+                border: "1px solid rgba(245,158,11,0.2)",
+                color: "#f59e0b",
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoadingApp) {
+                  (e.target as HTMLElement).style.background =
+                    "rgba(245,158,11,0.15)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.background =
+                  "rgba(245,158,11,0.1)";
+              }}>
               {isLoadingApp ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
               ) : (
                 <RefreshCw className="w-4 h-4" />
               )}
@@ -172,8 +225,18 @@ const UniversalLogin = () => {
 
   if (!appInfo) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+      <div
+        className="min-h-screen flex items-center justify-center animate-fade-in"
+        style={{
+          background:
+            "linear-gradient(135deg, var(--bg-base) 0%, rgba(99,102,241,0.05) 100%)",
+        }}>
+        <div className="flex justify-center">
+          <div
+            className="animate-spin rounded-full h-10 w-10 border-b-2"
+            style={{ borderColor: "#6366f1" }}
+          />
+        </div>
       </div>
     );
   }
@@ -181,37 +244,68 @@ const UniversalLogin = () => {
   // ─── Login form ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md animate-in">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 animate-fade-in"
+      style={{
+        background:
+          "linear-gradient(135deg, var(--bg-base) 0%, rgba(99,102,241,0.05) 100%)",
+      }}>
+      <div className="w-full max-w-md animate-slide-up">
         {/* App header */}
         <div className="text-center mb-8">
           {appInfo.logo ? (
             <img
               src={appInfo.logo}
               alt={appInfo.name}
-              className="w-14 h-14 rounded-xl object-cover mx-auto mb-4 shadow-sm"
+              className="w-14 h-14 rounded-xl object-cover mx-auto mb-4 shadow-lg"
             />
           ) : (
-            <div className="w-14 h-14 rounded-xl bg-primary-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <div
+              className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, #6366f1, #818cf8)",
+              }}>
               <span className="text-xl font-bold text-white">
                 {appInfo.name.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1
+            className="text-2xl font-bold"
+            style={{ color: "var(--text-primary)" }}>
             Sign in to {appInfo.name}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p
+            className="mt-1 text-sm"
+            style={{ color: "var(--text-muted)" }}>
             Enter your credentials to continue
           </p>
         </div>
 
         {/* Form card */}
-        <div className="card">
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: "var(--bg-elevated)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+          }}>
           {serverError && (
-            <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
-              <p className="text-sm text-red-700">{serverError}</p>
+            <div
+              className="mb-5 p-3 rounded-lg flex items-start gap-2"
+              style={{
+                background: "rgba(244,63,94,0.1)",
+                border: "1px solid rgba(244,63,94,0.2)",
+              }}>
+              <AlertCircle
+                className="w-4 h-4 mt-0.5 shrink-0"
+                style={{ color: "#f43f5e" }}
+              />
+              <p
+                className="text-sm"
+                style={{ color: "#f43f5e" }}>
+                {serverError}
+              </p>
             </div>
           )}
 
@@ -220,20 +314,34 @@ const UniversalLogin = () => {
             className="space-y-5">
             {/* Email */}
             <div>
-              <label className="label">Email address</label>
+              <label
+                className="block text-sm font-medium mb-1.5"
+                style={{ color: "var(--text-primary)" }}>
+                Email address
+              </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5"
+                  style={{ color: "var(--text-muted)" }}
+                />
                 <input
                   {...register("email")}
                   type="email"
-                  className="input pl-10"
                   placeholder="you@example.com"
                   autoComplete="email"
                   autoFocus
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg transition-colors"
+                  style={{
+                    background: "var(--bg-base)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-primary)",
+                  }}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                <p
+                  className="mt-1 text-sm flex items-center gap-1"
+                  style={{ color: "#f43f5e" }}>
                   <AlertCircle className="w-4 h-4" />
                   {errors.email.message}
                 </p>
@@ -242,20 +350,33 @@ const UniversalLogin = () => {
 
             {/* Password */}
             <div>
-              <label className="label">Password</label>
+              <label
+                className="block text-sm font-medium mb-1.5"
+                style={{ color: "var(--text-primary)" }}>
+                Password
+              </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5"
+                  style={{ color: "var(--text-muted)" }}
+                />
                 <input
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
-                  className="input pl-10 pr-10"
                   placeholder="••••••••"
                   autoComplete="current-password"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-lg transition-colors"
+                  style={{
+                    background: "var(--bg-base)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-primary)",
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: "var(--text-muted)" }}>
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
                   ) : (
@@ -264,7 +385,9 @@ const UniversalLogin = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                <p
+                  className="mt-1 text-sm flex items-center gap-1"
+                  style={{ color: "#f43f5e" }}>
                   <AlertCircle className="w-4 h-4" />
                   {errors.password.message}
                 </p>
@@ -275,33 +398,70 @@ const UniversalLogin = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn btn-primary w-full py-3">
+              className="w-full py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+              style={{
+                background: isSubmitting
+                  ? "rgba(99,102,241,0.6)"
+                  : "linear-gradient(135deg, #6366f1, #818cf8)",
+                color: "white",
+                boxShadow: !isSubmitting
+                  ? "0 8px 16px rgba(99,102,241,0.3)"
+                  : "none",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSubmitting) {
+                  (e.target as HTMLElement).style.boxShadow =
+                    "0 12px 24px rgba(99,102,241,0.4)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.boxShadow =
+                  "0 8px 16px rgba(99,102,241,0.3)";
+              }}>
               {isSubmitting ? (
-                <span className="flex items-center justify-center gap-2">
+                <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
                   Signing in...
-                </span>
+                </>
               ) : (
-                "Continue"
+                <>
+                  <ArrowRight className="w-4 h-4" />
+                  Continue
+                </>
               )}
             </button>
           </form>
 
           {/* Sign up link — passes all OAuth2 params through */}
-          <div className="mt-5 text-center text-sm text-gray-500">
+          <div
+            className="mt-5 text-center text-sm"
+            style={{ color: "var(--text-muted)" }}>
             Don't have an account?{" "}
             <Link
               to={`/universal/signup?${searchParams.toString()}`}
-              className="text-primary-600 hover:text-primary-700 font-medium">
+              className="font-medium transition-colors"
+              style={{ color: "#6366f1" }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.color = "#818cf8";
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.color = "#6366f1";
+              }}>
               Sign up
             </Link>
           </div>
         </div>
 
         {/* AuthFlow branding */}
-        <p className="mt-6 text-center text-xs text-gray-400">
+        <p
+          className="mt-6 text-center text-xs"
+          style={{ color: "var(--text-muted)" }}>
           Secured by{" "}
-          <span className="font-semibold text-gray-500">AuthFlow</span>
+          <span
+            className="font-semibold"
+            style={{ color: "var(--text-primary)" }}>
+            AuthFlow
+          </span>
         </p>
       </div>
     </div>

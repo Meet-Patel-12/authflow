@@ -11,7 +11,7 @@ import apiKeyRoutes from "./routes/apiKey.routes";
 import organizationRoutes from "./routes/organization.routes";
 import webhookRoutes from "./routes/webhook.routes";
 import adminRoutes from "./routes/admin.routes";
-import analyticsRoutes from "./routes/analytics.routes";
+import sdkAnalyticsRoutes from "./routes/sdkAnalytics.routes";
 import notificationRoutes from "./routes/notification.routes";
 import applicationRoutes from "./routes/application.routes";
 import sdkRoutes from "./routes/sdk.routes";
@@ -71,8 +71,8 @@ export function registerRoutes(app: Application): void {
   app.use("/api/api-keys", apiRateLimiter, apiKeyRoutes);
   app.use("/api/organizations", apiRateLimiter, organizationRoutes);
   app.use("/api/webhooks", apiRateLimiter, webhookRoutes);
-  app.use("/api/admin/analytics", apiRateLimiter, analyticsRoutes);
   app.use("/api/admin", apiRateLimiter, adminRoutes);
+  app.use("/api/admin/sdk-analytics", apiRateLimiter, sdkAnalyticsRoutes);
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/applications", apiRateLimiter, applicationRoutes);
   app.use("/api/sdk", apiRateLimiter, sdkRoutes);
