@@ -313,7 +313,6 @@ export default function SDKEndUsers() {
     total: 0,
     totalPages: 0,
   });
-  const [updating, setUpdating] = useState<string | null>(null);
 
   // Fetch apps on mount
   useEffect(() => {
@@ -368,7 +367,6 @@ export default function SDKEndUsers() {
 
   const handleToggleStatus = async (userId: string, isActive: boolean) => {
     if (!selectedAppId) return;
-    setUpdating(userId);
     try {
       await applicationMemberService.toggleUserStatus(
         selectedAppId,
@@ -381,23 +379,18 @@ export default function SDKEndUsers() {
       toast.success(isActive ? "User disabled" : "User enabled");
     } catch {
       toast.error("Failed to update user status");
-    } finally {
-      setUpdating(null);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (!selectedAppId || !confirm("Delete user? This cannot be undone."))
       return;
-    setUpdating(userId);
     try {
       await applicationMemberService.deleteAppUser(selectedAppId, userId);
       setUsers((prev) => prev.filter((u) => u.id !== userId));
       toast.success("User deleted");
     } catch {
       toast.error("Failed to delete user");
-    } finally {
-      setUpdating(null);
     }
   };
 
