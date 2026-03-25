@@ -49,6 +49,7 @@ export type SDKRegisterResult =
 
 export const sdkRegister = async (data: {
   organizationId: string;
+  applicationId: string;
   email: string;
   password: string;
   name: string;
@@ -89,6 +90,7 @@ export const sdkRegister = async (data: {
 
   const sdkUser = await createSDKUser({
     organizationId: data.organizationId,
+    applicationId: data.applicationId,
     email: data.email,
     password: data.password,
     name: data.name,

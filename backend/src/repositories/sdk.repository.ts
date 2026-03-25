@@ -48,6 +48,7 @@ export const countSDKUsers = async (
 
 export const createSDKUser = async (data: {
   organizationId: string;
+  applicationId: string;
   email: string;
   password: string;
   name: string;

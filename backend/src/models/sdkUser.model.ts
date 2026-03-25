@@ -48,11 +48,8 @@ const sdkUserSchema = new Schema<ISDKUser>(
   { timestamps: true },
 );
 
-// Email unique per app — two apps can share the same email address
-sdkUserSchema.index(
-  { organizationId: 1, applicationId: 1, email: 1 },
-  { unique: true },
-);
+// Email unique per org — two orgs can share the same email address
+sdkUserSchema.index({ organizationId: 1, email: 1 }, { unique: true });
 
 sdkUserSchema.pre("save", async function () {
   if (!this.isModified("password") || !this.password) return;

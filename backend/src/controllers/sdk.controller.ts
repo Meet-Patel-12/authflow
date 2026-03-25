@@ -20,6 +20,7 @@ export const registerHandler = async (req: Request, res: Response) => {
 
     const result = await sdkRegister({
       organizationId,
+      applicationId: app._id.toString(),
       email,
       password,
       name,

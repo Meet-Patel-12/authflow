@@ -240,6 +240,7 @@ export const completeRegisterHandler = async (
 
     const registerResult = await sdkRegister({
       organizationId,
+      applicationId: app._id.toString(),
       email,
       password,
       name,
