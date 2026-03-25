@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { SDKUser, ISDKUser } from "../models/sdkUser.model";
 import { SDKSession, ISDKSession } from "../models/sdkSession.model";
 import { Organization } from "../models/organization.model";
@@ -109,11 +110,15 @@ export const saveSDKSession = async (
 // ─── SDK User Management (Admin) ──────────────────────────────────────────────
 
 export const getAppSDKUsers = async (
-  applicationId: string,
+  applicationId: string | Types.ObjectId,
   skip: number = 0,
   limit: number = 20,
 ) => {
-  return SDKUser.find({ applicationId })
+  const appId =
+    typeof applicationId === "string"
+      ? new Types.ObjectId(applicationId)
+      : applicationId;
+  return SDKUser.find({ applicationId: appId })
     .select("-password")
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -122,18 +127,26 @@ export const getAppSDKUsers = async (
 };
 
 export const countAppSDKUsers = async (
-  applicationId: string,
+  applicationId: string | Types.ObjectId,
 ): Promise<number> => {
-  return SDKUser.countDocuments({ applicationId });
+  const appId =
+    typeof applicationId === "string"
+      ? new Types.ObjectId(applicationId)
+      : applicationId;
+  return SDKUser.countDocuments({ applicationId: appId });
 };
 
 export const searchAppSDKUsers = async (
-  applicationId: string,
+  applicationId: string | Types.ObjectId,
   query: Record<string, unknown>,
   skip: number = 0,
   limit: number = 20,
 ) => {
-  return SDKUser.find({ applicationId, ...query })
+  const appId =
+    typeof applicationId === "string"
+      ? new Types.ObjectId(applicationId)
+      : applicationId;
+  return SDKUser.find({ applicationId: appId, ...query })
     .select("-password")
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -142,14 +155,29 @@ export const searchAppSDKUsers = async (
 };
 
 export const countSearchAppSDKUsers = async (
-  applicationId: string,
+  applicationId: string | Types.ObjectId,
   query: Record<string, unknown>,
 ): Promise<number> => {
-  return SDKUser.countDocuments({ applicationId, ...query });
+  const appId =
+    typeof applicationId === "string"
+      ? new Types.ObjectId(applicationId)
+      : applicationId;
+  return SDKUser.countDocuments({ applicationId: appId, ...query });
 };
 
-export const getSDKUserById = async (userId: string, applicationId: string) => {
-  return SDKUser.findOne({ _id: userId, applicationId }).select("-password");
+export const getSDKUserById = async (
+  userId: string | Types.ObjectId,
+  applicationId: string | Types.ObjectId,
+) => {
+  const userId_objId =
+    typeof userId === "string" ? new Types.ObjectId(userId) : userId;
+  const appId =
+    typeof applicationId === "string"
+      ? new Types.ObjectId(applicationId)
+      : applicationId;
+  return SDKUser.findOne({ _id: userId_objId, applicationId: appId }).select(
+    "-password",
+  );
 };
 
 export const updateSDKUser = async (

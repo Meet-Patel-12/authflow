@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Types } from "mongoose";
 import { getIpAddress, getUserAgent } from "../utils/request.util";
 import { createAuditEntry } from "../repositories/audit.repository";
 import {
@@ -265,6 +266,9 @@ export const getAppSDKUsersHandler = async (req: Request, res: Response) => {
       findOrgApplicationById,
     } = require("../repositories/application.repository");
 
+    // Convert appId to ObjectId for proper MongoDB query
+    const appObjectId = new Types.ObjectId(appId);
+
     // Verify app belongs to org
     const app = await findOrgApplicationById(appId, req.user!.organizationId);
     if (!app) {
@@ -273,8 +277,8 @@ export const getAppSDKUsersHandler = async (req: Request, res: Response) => {
         .json({ success: false, message: "Application not found" });
     }
 
-    const users = await getAppSDKUsers(appId, skip, limit);
-    const total = await countAppSDKUsers(appId);
+    const users = await getAppSDKUsers(appObjectId, skip, limit);
+    const total = await countAppSDKUsers(appObjectId);
 
     res.status(200).json({
       success: true,
@@ -322,6 +326,9 @@ export const searchAppSDKUsersHandler = async (req: Request, res: Response) => {
       findOrgApplicationById,
     } = require("../repositories/application.repository");
 
+    // Convert appId to ObjectId for proper MongoDB query
+    const appObjectId = new Types.ObjectId(appId);
+
     // Verify app belongs to org
     const app = await findOrgApplicationById(appId, req.user!.organizationId);
     if (!app) {
@@ -339,8 +346,8 @@ export const searchAppSDKUsersHandler = async (req: Request, res: Response) => {
         }
       : {};
 
-    const users = await searchAppSDKUsers(appId, query, skip, limit);
-    const total = await countSearchAppSDKUsers(appId, query);
+    const users = await searchAppSDKUsers(appObjectId, query, skip, limit);
+    const total = await countSearchAppSDKUsers(appObjectId, query);
 
     res.status(200).json({
       success: true,
@@ -381,6 +388,10 @@ export const getSDKUserDetailHandler = async (req: Request, res: Response) => {
       findOrgApplicationById,
     } = require("../repositories/application.repository");
 
+    // Convert appId and userId to ObjectId for proper MongoDB query
+    const appObjectId = new Types.ObjectId(appId);
+    const userObjectId = new Types.ObjectId(userId);
+
     // Verify app belongs to org
     const app = await findOrgApplicationById(appId, req.user!.organizationId);
     if (!app) {
@@ -389,7 +400,7 @@ export const getSDKUserDetailHandler = async (req: Request, res: Response) => {
         .json({ success: false, message: "Application not found" });
     }
 
-    const user = await getSDKUserById(userId, appId);
+    const user = await getSDKUserById(userObjectId, appObjectId);
     if (!user) {
       return res
         .status(404)
