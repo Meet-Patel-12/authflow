@@ -8,7 +8,7 @@ export interface User {
   email: string;
   name: string;
   avatar?: string;
-  role: "owner" | "admin" | "member"; // ✅ WEEK 1 FIX: was "user" | "admin" | "owner"
+  role: "owner" | "admin" | "member";
   isEmailVerified: boolean;
   mfaEnabled: boolean;
   lastLoginAt?: string;

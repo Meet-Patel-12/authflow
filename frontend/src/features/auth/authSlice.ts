@@ -19,6 +19,18 @@ import type {
 /* Initial State                                    */
 /* ------------------------------------------------ */
 
+interface ApiError {
+  response?: {
+    status?: number;
+    data?: {
+      message?: string;
+      userId?: string;
+      organizationId?: string;
+      mfaRequired?: boolean;
+    };
+  };
+}
+
 const initialState: AuthState = {
   user: null,
   organization: null,
@@ -76,7 +88,7 @@ export const login = createAsyncThunk(
         accessToken,
       };
     } catch (error) {
-      const err = error as any;
+      const err = error as ApiError;
       if (err.response?.status === 429) {
         return rejectWithValue({
           message: "Too many login attempts. Please wait before trying again.",
@@ -133,7 +145,7 @@ export const completeMFALogin = createAsyncThunk(
 
       return { user, organization, accessToken };
     } catch (error) {
-      const err = error as any;
+      const err = error as ApiError;
       return rejectWithValue(
         err.response?.data?.message || "MFA verification failed",
       );
@@ -164,7 +176,7 @@ export const register = createAsyncThunk(
 
       return { user, organization, accessToken };
     } catch (error) {
-      const err = error as any;
+      const err = error as ApiError;
       return rejectWithValue(
         err.response?.data?.message || "Registration failed",
       );
@@ -258,11 +270,13 @@ const authSlice = createSlice({
         state.user = {
           id: action.payload.userId,
           email: action.payload.email,
+          name: "",
           role: action.payload.role,
           organizationId: action.payload.organizationId,
           mfaEnabled: false,
           emailVerified: false,
-          // Other fields will be populated by getCurrentUser API call
+          isEmailVerified: false,
+          createdAt: new Date().toISOString(),
         } as User;
         state.organization = {
           id: action.payload.organizationId,
