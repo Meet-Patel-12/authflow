@@ -63,7 +63,7 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
 
   const adminItems: NavItem[] = [
     { name: "Admin", path: "/admin", icon: Zap },
-    { name: "Users", path: "/users", icon: Users },
+    { name: "End Users", path: "/users", icon: Users },
     { name: "SDK Analytics", path: "/sdk-analytics", icon: BarChart3 },
   ];
 

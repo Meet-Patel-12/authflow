@@ -105,3 +105,76 @@ export const saveSDKSession = async (
 ): Promise<ISDKSession> => {
   return session.save();
 };
+
+// ─── SDK User Management (Admin) ──────────────────────────────────────────────
+
+export const getAppSDKUsers = async (
+  applicationId: string,
+  skip: number = 0,
+  limit: number = 20,
+) => {
+  return SDKUser.find({ applicationId })
+    .select("-password")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+};
+
+export const countAppSDKUsers = async (
+  applicationId: string,
+): Promise<number> => {
+  return SDKUser.countDocuments({ applicationId });
+};
+
+export const searchAppSDKUsers = async (
+  applicationId: string,
+  query: Record<string, unknown>,
+  skip: number = 0,
+  limit: number = 20,
+) => {
+  return SDKUser.find({ applicationId, ...query })
+    .select("-password")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+};
+
+export const countSearchAppSDKUsers = async (
+  applicationId: string,
+  query: Record<string, unknown>,
+): Promise<number> => {
+  return SDKUser.countDocuments({ applicationId, ...query });
+};
+
+export const getSDKUserById = async (userId: string, applicationId: string) => {
+  return SDKUser.findOne({ _id: userId, applicationId }).select("-password");
+};
+
+export const updateSDKUser = async (
+  userId: string,
+  updates: {
+    name?: string;
+    email?: string;
+    avatar?: string;
+    metadata?: Record<string, unknown>;
+  },
+) => {
+  return SDKUser.findByIdAndUpdate(userId, updates, { new: true }).select(
+    "-password",
+  );
+};
+
+export const toggleSDKUserActive = async (
+  userId: string,
+  isActive: boolean,
+) => {
+  return SDKUser.findByIdAndUpdate(userId, { isActive }, { new: true }).select(
+    "-password",
+  );
+};
+
+export const deleteSDKUser = async (userId: string) => {
+  return SDKUser.findByIdAndDelete(userId);
+};

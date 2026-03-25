@@ -12,13 +12,12 @@ import {
   deleteApplicationHandler,
 } from "../controllers/application.controller";
 import {
-  getAppUsersHandler,
-  searchAppUsersHandler,
-  addUserToAppHandler,
-  removeUserFromAppHandler,
-  updateAppUserRoleHandler,
-  getAvailableUsersHandler,
-} from "../controllers/applicationMember.controller";
+  getAppSDKUsersHandler,
+  searchAppSDKUsersHandler,
+  getSDKUserDetailHandler,
+  toggleSDKUserActiveHandler,
+  deleteSDKUserHandler,
+} from "../controllers/sdk.controller";
 
 const router = Router();
 
@@ -74,30 +73,22 @@ router.post(
 );
 router.delete("/:id", requireRole("owner", "admin"), deleteApplicationHandler);
 
-// ─── Application Members ──────────────────────────────────────────────────────
+// ─── Application End-Users (SDK Users) ────────────────────────────────────────
 
-router.get("/:appId/users", getAppUsersHandler);
-router.get("/:appId/users/search", searchAppUsersHandler);
-router.get("/:appId/available-users", getAvailableUsersHandler);
-router.post(
-  "/:appId/users",
+router.get("/:appId/users", getAppSDKUsersHandler);
+router.get("/:appId/users/search", searchAppSDKUsersHandler);
+router.get("/:appId/users/:userId", getSDKUserDetailHandler);
+router.patch(
+  "/:appId/users/:userId/toggle-active",
   requireRole("owner", "admin"),
-  body("userId").notEmpty().withMessage("userId is required"),
-  body("role").optional().isIn(["viewer", "editor", "admin"]),
+  body("isActive").isBoolean().withMessage("isActive must be a boolean"),
   validate,
-  addUserToAppHandler,
+  toggleSDKUserActiveHandler,
 );
 router.delete(
   "/:appId/users/:userId",
   requireRole("owner", "admin"),
-  removeUserFromAppHandler,
-);
-router.patch(
-  "/:appId/users/:userId",
-  requireRole("owner", "admin"),
-  body("role").isIn(["viewer", "editor", "admin"]).withMessage("Invalid role"),
-  validate,
-  updateAppUserRoleHandler,
+  deleteSDKUserHandler,
 );
 
 export default router;

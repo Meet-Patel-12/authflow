@@ -247,3 +247,294 @@ export const verifyTokenHandler = async (req: Request, res: Response) => {
     });
   }
 };
+
+// ─── SDK User Management (Admin) ───────────────────────────────────────────────
+
+export const getAppSDKUsersHandler = async (req: Request, res: Response) => {
+  try {
+    const { appId } = req.params as { appId: string };
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const {
+      getAppSDKUsers,
+      countAppSDKUsers,
+    } = require("../repositories/sdk.repository");
+    const {
+      findOrgApplicationById,
+    } = require("../repositories/application.repository");
+
+    // Verify app belongs to org
+    const app = await findOrgApplicationById(appId, req.user!.organizationId);
+    if (!app) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
+    }
+
+    const users = await getAppSDKUsers(appId, skip, limit);
+    const total = await countAppSDKUsers(appId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        users: users.map((u: any) => ({
+          id: u._id,
+          email: u.email,
+          name: u.name,
+          avatar: u.avatar,
+          isActive: u.isActive,
+          isEmailVerified: u.isEmailVerified,
+          lastLoginAt: u.lastLoginAt,
+          lastLoginIp: u.lastLoginIp,
+          createdAt: u.createdAt,
+        })),
+        pagination: {
+          current: page,
+          total: Math.ceil(total / limit),
+          count: total,
+        },
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching SDK users",
+      error: error.message,
+    });
+  }
+};
+
+export const searchAppSDKUsersHandler = async (req: Request, res: Response) => {
+  try {
+    const { appId } = req.params as { appId: string };
+    const q = req.query.q as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const {
+      searchAppSDKUsers,
+      countSearchAppSDKUsers,
+    } = require("../repositories/sdk.repository");
+    const {
+      findOrgApplicationById,
+    } = require("../repositories/application.repository");
+
+    // Verify app belongs to org
+    const app = await findOrgApplicationById(appId, req.user!.organizationId);
+    if (!app) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
+    }
+
+    const query = q
+      ? {
+          $or: [
+            { email: { $regex: q, $options: "i" } },
+            { name: { $regex: q, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const users = await searchAppSDKUsers(appId, query, skip, limit);
+    const total = await countSearchAppSDKUsers(appId, query);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        users: users.map((u: any) => ({
+          id: u._id,
+          email: u.email,
+          name: u.name,
+          avatar: u.avatar,
+          isActive: u.isActive,
+          isEmailVerified: u.isEmailVerified,
+          lastLoginAt: u.lastLoginAt,
+          lastLoginIp: u.lastLoginIp,
+          createdAt: u.createdAt,
+        })),
+        pagination: {
+          current: page,
+          total: Math.ceil(total / limit),
+          count: total,
+        },
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Error searching SDK users",
+      error: error.message,
+    });
+  }
+};
+
+export const getSDKUserDetailHandler = async (req: Request, res: Response) => {
+  try {
+    const { appId, userId } = req.params as { appId: string; userId: string };
+
+    const { getSDKUserById } = require("../repositories/sdk.repository");
+    const {
+      findOrgApplicationById,
+    } = require("../repositories/application.repository");
+
+    // Verify app belongs to org
+    const app = await findOrgApplicationById(appId, req.user!.organizationId);
+    if (!app) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
+    }
+
+    const user = await getSDKUserById(userId, appId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        isActive: user.isActive,
+        isEmailVerified: user.isEmailVerified,
+        lastLoginAt: user.lastLoginAt,
+        lastLoginIp: user.lastLoginIp,
+        metadata: user.metadata,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user details",
+      error: error.message,
+    });
+  }
+};
+
+export const toggleSDKUserActiveHandler = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { appId, userId } = req.params as { appId: string; userId: string };
+    const { isActive } = req.body as { isActive: boolean };
+
+    const { toggleSDKUserActive } = require("../repositories/sdk.repository");
+    const {
+      findOrgApplicationById,
+    } = require("../repositories/application.repository");
+
+    // Verify app belongs to org
+    const app = await findOrgApplicationById(appId, req.user!.organizationId);
+    if (!app) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
+    }
+
+    const user = await toggleSDKUserActive(userId, isActive);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    await createAuditEntry({
+      organizationId: req.user!.organizationId,
+      userId: req.user!.userId,
+      action: isActive ? "sdk_user_enabled" : "sdk_user_disabled",
+      resource: "sdk_user",
+      resourceId: userId,
+      method: req.method,
+      path: req.path,
+      statusCode: 200,
+      ipAddress: getIpAddress(req),
+      userAgent: getUserAgent(req),
+      metadata: { applicationId: appId, isActive },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: isActive ? "User enabled" : "User disabled",
+      data: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        isActive: user.isActive,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating user status",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteSDKUserHandler = async (req: Request, res: Response) => {
+  try {
+    const { appId, userId } = req.params as { appId: string; userId: string };
+
+    const {
+      deleteSDKUser,
+      getSDKUserById,
+    } = require("../repositories/sdk.repository");
+    const {
+      findOrgApplicationById,
+    } = require("../repositories/application.repository");
+
+    // Verify app belongs to org
+    const app = await findOrgApplicationById(appId, req.user!.organizationId);
+    if (!app) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
+    }
+
+    // Verify user exists in this app
+    const user = await getSDKUserById(userId, appId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    await deleteSDKUser(userId);
+
+    await createAuditEntry({
+      organizationId: req.user!.organizationId,
+      userId: req.user!.userId,
+      action: "sdk_user_deleted",
+      resource: "sdk_user",
+      resourceId: userId,
+      method: req.method,
+      path: req.path,
+      statusCode: 200,
+      ipAddress: getIpAddress(req),
+      userAgent: getUserAgent(req),
+      metadata: { applicationId: appId, email: user.email },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Error deleting user",
+      error: error.message,
+    });
+  }
+};

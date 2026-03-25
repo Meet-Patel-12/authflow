@@ -261,7 +261,7 @@ export const getAuditLogs = async (
   ]);
 
   return {
-    logs: logs.map((log) => ({
+    items: logs.map((log) => ({
       id: log._id,
       userId: log.userId,
       action: log.action,

@@ -45,7 +45,7 @@ import LoginCallback from "./features/universalLogin/pages/LoginCallback";
 
 /* Admin */
 import AdminDashboard from "./features/admin/pages/Dashboard";
-import AdminUsers from "./features/admin/pages/ApplicationUsers";
+import SDKEndUsers from "./features/admin/pages/SDKEndUsers";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -317,7 +317,7 @@ function App() {
             path="/users"
             element={
               <ProtectedRoute requireAdmin>
-                <AdminUsers />
+                <SDKEndUsers />
               </ProtectedRoute>
             }
           />
