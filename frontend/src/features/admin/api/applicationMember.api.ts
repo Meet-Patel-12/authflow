@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "/api/applications";
+const API_BASE_URL = "/applications";
 
 export const applicationMemberService = {
   // Get SDK users in an application
