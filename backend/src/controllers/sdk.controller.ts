@@ -10,6 +10,18 @@ import {
   sdkLogout,
   sdkVerifyToken,
 } from "../services/sdk.service";
+import {
+  getAppSDKUsers,
+  countAppSDKUsers,
+  searchAppSDKUsers,
+  countSearchAppSDKUsers,
+  getSDKUserById,
+  toggleSDKUserActive,
+  deleteSDKUser,
+} from "../repositories/sdk.repository";
+import {
+  findOrgApplicationById,
+} from "../repositories/application.repository";
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 
@@ -258,14 +270,6 @@ export const getAppSDKUsersHandler = async (req: Request, res: Response) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const {
-      getAppSDKUsers,
-      countAppSDKUsers,
-    } = require("../repositories/sdk.repository");
-    const {
-      findOrgApplicationById,
-    } = require("../repositories/application.repository");
-
     // Convert appId to ObjectId for proper MongoDB query
     const appObjectId = new Types.ObjectId(appId);
 
@@ -317,14 +321,6 @@ export const searchAppSDKUsersHandler = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = 20;
     const skip = (page - 1) * limit;
-
-    const {
-      searchAppSDKUsers,
-      countSearchAppSDKUsers,
-    } = require("../repositories/sdk.repository");
-    const {
-      findOrgApplicationById,
-    } = require("../repositories/application.repository");
 
     // Convert appId to ObjectId for proper MongoDB query
     const appObjectId = new Types.ObjectId(appId);
@@ -383,11 +379,6 @@ export const getSDKUserDetailHandler = async (req: Request, res: Response) => {
   try {
     const { appId, userId } = req.params as { appId: string; userId: string };
 
-    const { getSDKUserById } = require("../repositories/sdk.repository");
-    const {
-      findOrgApplicationById,
-    } = require("../repositories/application.repository");
-
     // Convert appId and userId to ObjectId for proper MongoDB query
     const appObjectId = new Types.ObjectId(appId);
     const userObjectId = new Types.ObjectId(userId);
@@ -440,11 +431,6 @@ export const toggleSDKUserActiveHandler = async (
     const { appId, userId } = req.params as { appId: string; userId: string };
     const { isActive } = req.body as { isActive: boolean };
 
-    const { toggleSDKUserActive } = require("../repositories/sdk.repository");
-    const {
-      findOrgApplicationById,
-    } = require("../repositories/application.repository");
-
     // Verify app belongs to org
     const app = await findOrgApplicationById(appId, req.user!.organizationId);
     if (!app) {
@@ -496,14 +482,6 @@ export const toggleSDKUserActiveHandler = async (
 export const deleteSDKUserHandler = async (req: Request, res: Response) => {
   try {
     const { appId, userId } = req.params as { appId: string; userId: string };
-
-    const {
-      deleteSDKUser,
-      getSDKUserById,
-    } = require("../repositories/sdk.repository");
-    const {
-      findOrgApplicationById,
-    } = require("../repositories/application.repository");
 
     // Verify app belongs to org
     const app = await findOrgApplicationById(appId, req.user!.organizationId);

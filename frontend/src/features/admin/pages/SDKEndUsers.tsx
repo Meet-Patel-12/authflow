@@ -348,14 +348,12 @@ export default function SDKEndUsers() {
               selectedAppId,
               pagination.page,
             );
-        setUsers(res?.data?.data?.users || []);
-        console.log("Fetched users:", res?.data?.data?.users);
+        setUsers(res?.data?.users || []);
         setPagination((p) => ({
           ...p,
-          total: res?.data?.data?.pagination?.count || 0,
-          totalPages: res?.data?.data?.pagination?.total || 0,
+          total: res?.data?.pagination?.count || 0,
+          totalPages: res?.data?.pagination?.total || 0,
         }));
-        console.log("Pagination info:", res?.data?.data?.pagination);
       } catch (error) {
         console.error("Error loading SDK users:", error);
         toast.error("Failed to load users");

@@ -61,6 +61,51 @@ export const saveSDKUser = async (user: ISDKUser): Promise<ISDKUser> => {
   return user.save();
 };
 
+export const getAppSDKUsers = async (
+  applicationId: any,
+  skip: number,
+  limit: number,
+) => {
+  return SDKUser.find({ applicationId }).skip(skip).limit(limit).sort({
+    createdAt: -1,
+  });
+};
+
+export const countAppSDKUsers = async (applicationId: any): Promise<number> => {
+  return SDKUser.countDocuments({ applicationId });
+};
+
+export const searchAppSDKUsers = async (
+  applicationId: any,
+  query: Record<string, any>,
+  skip: number,
+  limit: number,
+) => {
+  return SDKUser.find({ applicationId, ...query })
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+};
+
+export const countSearchAppSDKUsers = async (
+  applicationId: any,
+  query: Record<string, any>,
+): Promise<number> => {
+  return SDKUser.countDocuments({ applicationId, ...query });
+};
+
+export const getSDKUserById = async (userId: any, applicationId: any) => {
+  return SDKUser.findOne({ _id: userId, applicationId });
+};
+
+export const toggleSDKUserActive = async (userId: any, isActive: boolean) => {
+  return SDKUser.findByIdAndUpdate(userId, { isActive }, { new: true });
+};
+
+export const deleteSDKUser = async (userId: any) => {
+  return SDKUser.findByIdAndDelete(userId);
+};
+
 // ─── SDK Session ──────────────────────────────────────────────────────────────
 
 export const createSDKSession = async (data: {
