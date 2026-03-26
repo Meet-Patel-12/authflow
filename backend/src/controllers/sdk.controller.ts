@@ -19,9 +19,7 @@ import {
   toggleSDKUserActive,
   deleteSDKUser,
 } from "../repositories/sdk.repository";
-import {
-  findOrgApplicationById,
-} from "../repositories/application.repository";
+import { findOrgApplicationById } from "../repositories/application.repository";
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 
@@ -491,8 +489,9 @@ export const deleteSDKUserHandler = async (req: Request, res: Response) => {
         .json({ success: false, message: "Application not found" });
     }
 
-    // Verify user exists in this app
-    const user = await getSDKUserById(userId, appId);
+    const appObjectId = new Types.ObjectId(appId);
+    const userObjectId = new Types.ObjectId(userId);
+    const user = await getSDKUserById(userObjectId, appObjectId);
     if (!user) {
       return res
         .status(404)

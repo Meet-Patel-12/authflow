@@ -1,11 +1,11 @@
-import axios from "axios";
+import api from "../../../app/apiClient";
 
 const API_BASE_URL = "/applications";
 
 export const applicationMemberService = {
   // Get SDK users in an application
   getAppUsers: async (appId: string, page: number = 1) => {
-    const response = await axios.get(
+    const response = await api.get(
       `${API_BASE_URL}/${appId}/users?page=${page}`,
     );
     return response.data;
@@ -13,7 +13,7 @@ export const applicationMemberService = {
 
   // Search SDK users in an application
   searchAppUsers: async (appId: string, query: string, page: number = 1) => {
-    const response = await axios.get(
+    const response = await api.get(
       `${API_BASE_URL}/${appId}/users/search?q=${query}&page=${page}`,
     );
     return response.data;
@@ -21,9 +21,7 @@ export const applicationMemberService = {
 
   // Get SDK user details
   getAppUserDetail: async (appId: string, userId: string) => {
-    const response = await axios.get(
-      `${API_BASE_URL}/${appId}/users/${userId}`,
-    );
+    const response = await api.get(`${API_BASE_URL}/${appId}/users/${userId}`);
     return response.data;
   },
 
@@ -33,7 +31,7 @@ export const applicationMemberService = {
     userId: string,
     isActive: boolean,
   ) => {
-    const response = await axios.patch(
+    const response = await api.patch(
       `${API_BASE_URL}/${appId}/users/${userId}/toggle-active`,
       { isActive },
     );
@@ -42,7 +40,7 @@ export const applicationMemberService = {
 
   // Delete SDK user
   deleteAppUser: async (appId: string, userId: string) => {
-    const response = await axios.delete(
+    const response = await api.delete(
       `${API_BASE_URL}/${appId}/users/${userId}`,
     );
     return response.data;
