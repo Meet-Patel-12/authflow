@@ -103,7 +103,6 @@ export default function SDKAnalytics() {
       try {
         setLoading(true);
         const response = await sdkAnalyticsService.getApplicationsList();
-        console.log("Applications response:", response);
         setApplications(response.data || []);
         if (response.data && response.data.length > 0) {
           setSelectedAppId(response.data[0]._id);
