@@ -7,16 +7,10 @@ import {
   ExternalLink,
   Terminal,
   Shield,
-  Zap,
-  AppWindow,
-  Key,
   RefreshCw,
   LogOut,
   User,
   Lock,
-  AlertTriangle,
-  Code2,
-  BookOpen,
 } from "lucide-react";
 import api from "../../../app/apiClient";
 import { CopyButton, Alert } from "../../../components/ui";
@@ -459,13 +453,11 @@ app.get('/api/orders',   verifyAuthFlowToken, (req, res) => { /* ... */ });
 app.post('/api/orders',  verifyAuthFlowToken, (req, res) => { /* ... */ });`;
 
 const genEnvExample = (cid: string) =>
-  `# .env — server-side only, never commit this file
-
+  `# Backend .env file
 AUTHFLOW_CLIENT_ID=${cid}
-AUTHFLOW_CLIENT_SECRET=your_client_secret_here
-
-# The base URL of your AuthFlow instance:
-AUTHFLOW_BASE_URL=${window.location.origin}`;
+AUTHFLOW_CLIENT_SECRET=your_secret_from_dashboard
+AUTHFLOW_BASE_URL=${window.location.origin}
+NODE_ENV=development`;
 
 /* ─── Endpoint reference data ─── */
 const ENDPOINTS = [
@@ -539,114 +531,33 @@ const DeveloperIntegration = () => {
   }));
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in space-y-7">
-      {/* ── Header ── */}
-      <div>
-        <h1 className="page-title">Developer Integration</h1>
-        <p className="page-subtitle">
-          Use AuthFlow as the authentication backend for your own applications —
-          no auth code to write
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-white mb-3">
+          Integration Guide
+        </h1>
+        <p className="text-gray-400 text-lg">
+          Quick start with AuthFlow. Select your application and integrate our
+          SDK.
         </p>
       </div>
 
-      {/* ── How it works ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          {
-            icon: AppWindow,
-            step: "01",
-            title: "Create Application",
-            desc: "Register your app in the Applications section to get a client_id and client_secret.",
-            color: "var(--accent-dim)",
-            glow: "var(--accent)",
-          },
-          {
-            icon: Terminal,
-            step: "02",
-            title: "Call SDK Endpoints",
-            desc: "Your backend calls /api/sdk/* with client credentials to register, login, and manage your users.",
-            color: "var(--success-dim)",
-            glow: "var(--success)",
-          },
-          {
-            icon: Shield,
-            step: "03",
-            title: "Verify & Protect",
-            desc: "Use /api/sdk/token/verify as drop-in middleware — no JWT library or secret management needed.",
-            color: "var(--cyan-dim)",
-            glow: "var(--cyan)",
-          },
-        ].map(({ icon: Icon, step, title, desc, color, glow }) => (
-          <div
-            key={step}
-            className="rounded-xl p-5 animate-slide-up"
-            style={{
-              background: "var(--bg-elevated)",
-              border: "1px solid var(--border)",
-            }}>
-            <div className="flex items-start gap-3 mb-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: color }}>
-                <Icon
-                  className="w-4 h-4"
-                  style={{ color: glow }}
-                />
-              </div>
-              <span
-                className="text-[10px] font-bold mt-2.5 font-mono"
-                style={{ color: "var(--text-muted)" }}>
-                {step}
-              </span>
-            </div>
-            <p
-              className="text-sm font-semibold mb-1.5"
-              style={{ color: "var(--text-primary)" }}>
-              {title}
-            </p>
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              {desc}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── App selector + credentials ── */}
-      <div
-        className="rounded-2xl p-5 space-y-4"
-        style={{
-          background: "var(--bg-elevated)",
-          border: "1px solid var(--border)",
-        }}>
-        <div className="flex items-center gap-2 mb-1">
-          <Code2
-            className="w-4 h-4"
-            style={{ color: "var(--accent)" }}
-          />
-          <h2
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}>
-            Select Application
-          </h2>
-          <span className="badge badge-muted text-[10px]">
-            examples auto-populate
-          </span>
-        </div>
-
+      {/* App Selector */}
+      <div className="mb-8 max-w-md">
+        <label className="text-sm font-semibold text-white block mb-2">
+          Select Application
+        </label>
         {loading ? (
-          <div className="h-10 rounded-xl skeleton" />
+          <div className="h-10 rounded-lg skeleton" />
         ) : applications.length === 0 ? (
           <Alert variant="warning">
-            No applications found.{" "}
             <a
               href="/applications"
-              className="underline font-medium"
-              style={{ color: "var(--warning)" }}>
-              Create one first
+              className="underline font-medium">
+              Create an application first
             </a>{" "}
-            to see your client_id in the code examples.
+            to get started
           </Alert>
         ) : (
           <AppDropdown
@@ -655,245 +566,164 @@ const DeveloperIntegration = () => {
             options={appOptions}
           />
         )}
-
-        {selectedApp && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="label-dark">Client ID</label>
-              <div
-                className="flex items-center gap-2 px-3 py-2 rounded-lg"
-                style={{
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid var(--border)",
-                }}>
-                <code
-                  className="flex-1 text-xs font-mono truncate"
-                  style={{ color: "#a5f3fc" }}>
-                  {selectedApp.clientId}
-                </code>
-                <CopyButton
-                  text={selectedApp.clientId}
-                  size={13}
-                />
-              </div>
-              <p
-                className="text-[10px] mt-1"
-                style={{ color: "var(--text-muted)" }}>
-                Safe to use in frontend / public code
-              </p>
-            </div>
-            <div>
-              <label className="label-dark">Client Secret</label>
-              <div
-                className="flex items-center gap-2 px-3 py-2 rounded-lg"
-                style={{
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid var(--border)",
-                }}>
-                <code
-                  className="flex-1 text-xs font-mono"
-                  style={{ color: "var(--text-muted)" }}>
-                  process.env.AUTHFLOW_CLIENT_SECRET
-                </code>
-              </div>
-              <p
-                className="text-[10px] mt-1"
-                style={{ color: "var(--danger)", opacity: 0.8 }}>
-                Server-side only — never expose to clients
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* ── Security warning ── */}
-      <Alert variant="warning">
-        <p className="font-semibold text-xs mb-1">
-          Keep client_secret server-side only
-        </p>
-        <p className="text-xs font-normal leading-relaxed">
-          Never embed client_secret in frontend JavaScript, mobile apps, or
-          version control. Store it as an environment variable on your server.
-          The client_id is public and safe to share.
-        </p>
-      </Alert>
-
-      {/* ── Environment setup ── */}
-      <div
-        className="rounded-2xl p-5"
-        style={{
-          background: "var(--bg-elevated)",
-          border: "1px solid var(--border)",
-        }}>
-        <div className="flex items-center gap-2 mb-3">
-          <Key
-            className="w-4 h-4"
-            style={{ color: "var(--warning)" }}
-          />
-          <h2
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}>
-            Environment Setup
-          </h2>
+      {/* Credentials */}
+      {selectedApp && (
+        <div className="grid grid-cols-2 gap-4 mb-12 max-w-2xl">
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
+              Client ID
+            </p>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+              <code className="flex-1 text-sm font-mono text-cyan-300 truncate">
+                {selectedApp.clientId}
+              </code>
+              <CopyButton
+                text={selectedApp.clientId}
+                size={13}
+              />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
+              Client Secret
+            </p>
+            <div className="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+              <code className="text-sm font-mono text-yellow-300">
+                See .env file →
+              </code>
+            </div>
+          </div>
         </div>
-        <p
-          className="text-xs mb-3"
-          style={{ color: "var(--text-muted)" }}>
-          Add these variables to your server's{" "}
-          <code
-            className="font-mono"
-            style={{ color: "var(--accent)" }}>
-            .env
-          </code>{" "}
-          file:
-        </p>
+      )}
+
+      {/* Quick Setup */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-white mb-6">Quick Setup</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              num: "1",
+              title: "Get Credentials",
+              desc: "Copy your Client ID and Secret from above",
+            },
+            {
+              num: "2",
+              title: "Setup Environment",
+              desc: "Add variables to your .env file",
+            },
+            {
+              num: "3",
+              title: "Integrate SDK",
+              desc: "Follow code examples below",
+            },
+          ].map(({ num, title, desc }) => (
+            <div
+              key={num}
+              className="p-4 rounded-lg border border-slate-700 bg-slate-900/50 hover:bg-slate-800/50 transition">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-bold text-blue-400">{num}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-white text-sm">{title}</p>
+                  <p className="text-xs text-gray-400 mt-1">{desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Environment Setup */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-white mb-4">
+          Environment Variables
+        </h2>
         <CodeBlock code={genEnvExample(clientId)} />
       </div>
 
-      {/* ── Code examples ── */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <BookOpen
-            className="w-4 h-4"
-            style={{ color: "var(--accent)" }}
-          />
-          <h2
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}>
-            Code Examples
-          </h2>
-          <span className="badge badge-muted text-[10px]">
-            Node.js / fetch API
-          </span>
-        </div>
-
-        <div className="space-y-2">
+      {/* Code Examples */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-white mb-6">Code Examples</h2>
+        <div className="space-y-3">
           <Section
             icon={User}
             title="Register User"
             defaultOpen>
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              Create a new user in your application. Always called from your
-              backend — never directly from a browser.
-            </p>
             <CodeBlock code={genRegister(baseUrl, clientId)} />
           </Section>
-
           <Section
             icon={Lock}
             title="Login User">
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              Authenticate an existing user and receive short-lived access +
-              long-lived refresh tokens.
-            </p>
             <CodeBlock code={genLogin(baseUrl, clientId)} />
           </Section>
-
           <Section
             icon={User}
             title="Get User Profile">
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              Fetch the currently authenticated user's profile. Requires the
-              user's access token.
-            </p>
             <CodeBlock code={genMe(baseUrl, clientId)} />
           </Section>
-
           <Section
             icon={RefreshCw}
             title="Refresh Access Token">
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              Access tokens expire after a configured TTL. Use the refresh token
-              to issue a new one without re-login.
-            </p>
             <CodeBlock code={genRefresh(baseUrl, clientId)} />
           </Section>
-
           <Section
             icon={Shield}
-            title="Verify Token"
-            badge="protect your API">
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              Validate a user's JWT on your backend before serving protected
-              resources. No JWT library or shared secret needed.
-            </p>
+            title="Verify Token (Backend)">
             <CodeBlock code={genVerify(baseUrl, clientId)} />
           </Section>
-
           <Section
             icon={LogOut}
             title="Logout User">
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              Revoke the user's session and invalidate their refresh token.
-              Always clear tokens client-side after calling this.
-            </p>
             <CodeBlock code={genLogout(baseUrl, clientId)} />
           </Section>
-
           <Section
             icon={Terminal}
-            title="Express Middleware"
+            title="Express.js Middleware"
             badge="recommended">
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "var(--text-muted)" }}>
-              Drop-in middleware for Express. Wraps the verify endpoint to
-              protect any route with one line. Includes error handling for auth
-              service downtime.
-            </p>
             <CodeBlock code={genMiddleware(baseUrl, clientId)} />
           </Section>
         </div>
       </div>
 
-      {/* ── Endpoint reference ── */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <Zap
-            className="w-4 h-4"
-            style={{ color: "var(--accent)" }}
-          />
-          <h2
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}>
-            Endpoint Reference
-          </h2>
-        </div>
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            background: "var(--bg-elevated)",
-            border: "1px solid var(--border)",
-          }}>
-          <table className="table-dark">
-            <thead>
+      {/* API Endpoints */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-white mb-6">API Endpoints</h2>
+        <div className="overflow-x-auto rounded-lg border border-slate-700">
+          <table className="w-full text-sm">
+            <thead
+              style={{
+                background: "rgba(15,23,42,0.8)",
+                borderBottom: "1px solid rgb(55,65,81)",
+              }}>
               <tr>
-                <th>Method</th>
-                <th>Path</th>
-                <th>Description</th>
-                <th>Auth</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-300">
+                  Method
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-300">
+                  Path
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-300">
+                  Description
+                </th>
               </tr>
             </thead>
             <tbody>
-              {ENDPOINTS.map((ep) => {
+              {ENDPOINTS.map((ep, i) => {
                 const ms = METHOD_STYLE[ep.method] ?? METHOD_STYLE.GET;
                 return (
-                  <tr key={ep.path}>
-                    <td>
+                  <tr
+                    key={ep.path}
+                    style={{
+                      background:
+                        i % 2 === 0 ? "rgba(30,41,59,0.4)" : "transparent",
+                      borderBottom: "1px solid rgb(30,41,59)",
+                    }}>
+                    <td className="px-4 py-3">
                       <span
-                        className="badge text-[10px] font-bold"
+                        className="text-[10px] font-bold px-2 py-1 rounded"
                         style={{
                           background: ms.bg,
                           color: ms.color,
@@ -902,26 +732,13 @@ const DeveloperIntegration = () => {
                         {ep.method}
                       </span>
                     </td>
-                    <td>
-                      <code
-                        className="text-xs font-mono"
-                        style={{ color: "#a5f3fc" }}>
+                    <td className="px-4 py-3">
+                      <code className="text-cyan-300 font-mono text-xs">
                         {ep.path}
                       </code>
                     </td>
-                    <td>
-                      <span
-                        className="text-xs"
-                        style={{ color: "var(--text-secondary)" }}>
-                        {ep.desc}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className="text-xs font-mono"
-                        style={{ color: "var(--text-muted)" }}>
-                        {ep.auth}
-                      </span>
+                    <td className="px-4 py-3 text-gray-400 text-xs">
+                      {ep.desc}
                     </td>
                   </tr>
                 );
@@ -931,193 +748,38 @@ const DeveloperIntegration = () => {
         </div>
       </div>
 
-      {/* ── Token lifecycle diagram ── */}
-      <div
-        className="rounded-2xl p-5"
-        style={{
-          background: "var(--bg-elevated)",
-          border: "1px solid var(--border)",
-        }}>
-        <div className="flex items-center gap-2 mb-4">
-          <RefreshCw
-            className="w-4 h-4"
-            style={{ color: "var(--cyan)" }}
-          />
-          <h2
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}>
-            Token Lifecycle
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            {
-              label: "Access Token",
-              ttl: "Short-lived (15m – 24h)",
-              usage:
-                "Pass in Authorization: Bearer header on every API request",
-              store: "Memory or short-lived httpOnly cookie",
-              color: "var(--accent)",
-              dim: "var(--accent-dim)",
-            },
-            {
-              label: "Refresh Token",
-              ttl: "Long-lived (7d – 1yr)",
-              usage:
-                "Exchange for a new access token when the current one expires",
-              store: "httpOnly cookie only — never localStorage",
-              color: "var(--success)",
-              dim: "var(--success-dim)",
-            },
-            {
-              label: "Client Secret",
-              ttl: "Until rotated",
-              usage: "Authenticate your backend with AuthFlow SDK endpoints",
-              store: "Environment variable — never in code or frontend",
-              color: "var(--warning)",
-              dim: "var(--warning-dim)",
-            },
-          ].map(({ label, ttl, usage, store, color, dim }) => (
-            <div
-              key={label}
-              className="rounded-xl p-4 space-y-2"
-              style={{ background: dim, border: `1px solid ${color}33` }}>
-              <p
-                className="text-xs font-bold"
-                style={{ color }}>
-                {label}
-              </p>
-              <div>
-                <p
-                  className="text-[10px] font-semibold uppercase tracking-wider mb-0.5"
-                  style={{ color: "var(--text-muted)" }}>
-                  TTL
-                </p>
-                <p
-                  className="text-xs"
-                  style={{ color: "var(--text-secondary)" }}>
-                  {ttl}
-                </p>
-              </div>
-              <div>
-                <p
-                  className="text-[10px] font-semibold uppercase tracking-wider mb-0.5"
-                  style={{ color: "var(--text-muted)" }}>
-                  Usage
-                </p>
-                <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: "var(--text-secondary)" }}>
-                  {usage}
-                </p>
-              </div>
-              <div>
-                <p
-                  className="text-[10px] font-semibold uppercase tracking-wider mb-0.5"
-                  style={{ color: "var(--text-muted)" }}>
-                  Store in
-                </p>
-                <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: "var(--text-secondary)" }}>
-                  {store}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Security Reminder */}
+      <Alert
+        variant="warning"
+        className="mb-12">
+        <p className="font-semibold text-sm mb-1">🔒 Security Best Practices</p>
+        <ul className="text-xs space-y-1 text-gray-300">
+          <li>
+            • Never expose{" "}
+            <code className="bg-slate-800 px-1 rounded">client_secret</code> in
+            frontend code
+          </li>
+          <li>• Store tokens in httpOnly cookies on the backend</li>
+          <li>• Always verify tokens on protected routes</li>
+          <li>• Rotate credentials immediately if exposed</li>
+        </ul>
+      </Alert>
 
-      {/* ── Security checklist ── */}
-      <div
-        className="rounded-2xl p-5"
-        style={{
-          background: "var(--bg-elevated)",
-          border: "1px solid var(--border)",
-        }}>
-        <div className="flex items-center gap-2 mb-4">
-          <AlertTriangle
-            className="w-4 h-4"
-            style={{ color: "var(--danger)" }}
-          />
-          <h2
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}>
-            Security Checklist
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {[
-            {
-              ok: true,
-              text: "client_secret stored in environment variable only",
-            },
-            {
-              ok: true,
-              text: "refreshToken stored in httpOnly cookie (not localStorage)",
-            },
-            { ok: true, text: "accessToken never logged or exposed in URLs" },
-            {
-              ok: true,
-              text: "All SDK calls made server-side, never from the browser",
-            },
-            {
-              ok: true,
-              text: "Token verify called on every protected request",
-            },
-            {
-              ok: true,
-              text: "client_secret rotated after any suspected exposure",
-            },
-          ].map(({ ok, text }) => (
-            <div
-              key={text}
-              className="flex items-start gap-2.5 py-1">
-              <div
-                className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{
-                  background: ok ? "var(--success-dim)" : "var(--danger-dim)",
-                }}>
-                <Check
-                  className="w-2.5 h-2.5"
-                  style={{ color: ok ? "var(--success)" : "var(--danger)" }}
-                />
-              </div>
-              <p
-                className="text-xs leading-relaxed"
-                style={{ color: "var(--text-secondary)" }}>
-                {text}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── CTA ── */}
-      <div
-        className="rounded-2xl p-5 flex items-center justify-between gap-4"
-        style={{
-          background: "var(--accent-dim)",
-          border: "1px solid rgba(99,102,241,0.25)",
-        }}>
+      {/* CTA */}
+      <div className="p-6 rounded-lg bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 flex items-center justify-between">
         <div>
-          <p
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}>
-            Ready to integrate?
-          </p>
-          <p
-            className="text-xs mt-0.5"
-            style={{ color: "var(--text-muted)" }}>
-            Create your application to get credentials, then follow the examples
-            above
+          <p className="font-semibold text-white">Ready to integrate?</p>
+          <p className="text-sm text-gray-400">
+            Check the code examples above and start building
           </p>
         </div>
         <a
-          href="/applications"
-          className="btn btn-primary gap-2 flex-shrink-0 text-sm">
-          Go to Applications
-          <ExternalLink className="w-3.5 h-3.5" />
+          href="https://github.com/auth0/auth0-react"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-primary gap-2 flex-shrink-0">
+          View GitHub
+          <ExternalLink className="w-4 h-4" />
         </a>
       </div>
     </div>
