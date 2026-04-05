@@ -3,8 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "./app/hooks";
-import { getCurrentUser, setUserFromToken } from "./features/auth/authSlice";
-import { getUserFromToken } from "./app/jwtUtils";
+import { getCurrentUser, setUserFromToken, logout } from "./features/auth/authSlice";
+import { getUserFromToken, isTokenExpired } from "./app/jwtUtils";
 import { fetchOrganizations } from "./features/organizations/organizationSlice";
 
 import ProtectedRoute from "./app/ProtectedRoute";
@@ -65,6 +65,30 @@ function App() {
       if (organizations.length === 0) dispatch(fetchOrganizations());
     }
   }, [accessToken]);
+
+  // ✅ Check for token expiration and force logout
+  useEffect(() => {
+    const checkTokenValidity = () => {
+      const storedToken = localStorage.getItem("accessToken");
+      const forceLogout = localStorage.getItem("forceLogout");
+
+      // Clear forceLogout flag after reading it
+      if (forceLogout) {
+        localStorage.removeItem("forceLogout");
+      }
+
+      // If token is expired or forceLogout flag is set, logout
+      if ((storedToken && isTokenExpired(storedToken)) || forceLogout) {
+        dispatch(logout());
+      }
+    };
+
+    checkTokenValidity();
+
+    // Check token validity every minute
+    const interval = setInterval(checkTokenValidity, 60000);
+    return () => clearInterval(interval);
+  }, [dispatch]);
 
   return (
     <>

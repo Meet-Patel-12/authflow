@@ -48,6 +48,10 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Prevent infinite refresh loop
+    // Only retry if:
+    // 1. Status is 401
+    // 2. Not already retried
+    // 3. Not a refresh token request itself
 
     if (
       error.response?.status === 401 &&
@@ -64,7 +68,6 @@ api.interceptors.response.use(
         }
 
         // Request new access token
-
         const res = await api.post("/auth/refresh-token", {
           refreshToken,
         });
@@ -72,20 +75,20 @@ api.interceptors.response.use(
         const newAccessToken = res.data.data.accessToken;
 
         // Store new token
-
         localStorage.setItem("accessToken", newAccessToken);
 
         // Update header and retry original request
-
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed → logout
-
+        // Refresh failed → logout user
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("organizationId");
+
+        // Signal logout to the app
+        localStorage.setItem("forceLogout", "true");
 
         window.location.href = "/login";
 
@@ -94,7 +97,6 @@ api.interceptors.response.use(
     }
 
     // Global error logging
-
     if (error.response) {
       const status = error.response.status;
 

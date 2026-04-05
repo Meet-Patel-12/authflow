@@ -1,6 +1,8 @@
 import type React from "react";
 import { Navigate } from "react-router-dom";
-import { useAppSelector } from "./hooks";
+import { useAppSelector, useAppDispatch } from "./hooks";
+import { isTokenExpired } from "./jwtUtils";
+import { logout } from "../features/auth/authSlice";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,9 +14,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // protected route should not require admin by default
   requireAdmin = false,
 }) => {
-  const { isAuthenticated, loading, user } = useAppSelector(
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, loading, user, accessToken } = useAppSelector(
     (state) => state.auth,
   );
+
+  // ✅ Check if token is expired
+  if (accessToken && isTokenExpired(accessToken)) {
+    dispatch(logout());
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
+  }
 
   // Show loader while checking auth
   if (loading) {

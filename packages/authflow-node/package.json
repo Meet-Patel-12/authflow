@@ -1,6 +1,6 @@
 {
-  "name": "@meet_patel_12/authflow-node",
-  "version": "0.1.0",
+  "name": "@meet_patel_03/authflow-node",
+  "version": "0.1.2",
   "description": "AuthFlow server-side SDK — token exchange and verification for Next.js and Express",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -40,5 +40,10 @@
     "server"
   ],
   "license": "MIT",
-  "sideEffects": false
+  "sideEffects": false,
+  "author": "Meet Patel (https://github.com/Meet-Patel-12)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Meet-Patel-12/AuthFlow"
+  }
 }

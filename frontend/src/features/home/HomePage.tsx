@@ -176,15 +176,15 @@ const steps = [
 
 const sdkPackages = [
   {
-    pkg: "@meet_patel_12/authflow-js",
+    pkg: "@meet_patel_03/authflow-js",
     desc: "Vanilla JS / TypeScript — for any SPA",
   },
   {
-    pkg: "@meet_patel_12/authflow-react",
+    pkg: "@meet_patel_03/authflow-react",
     desc: "React hooks + Provider — drop-in",
   },
   {
-    pkg: "@meet_patel_12/authflow-node",
+    pkg: "@meet_patel_03/authflow-node",
     desc: "Next.js / Express — server-side",
   },
 ];

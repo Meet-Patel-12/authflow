@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthFlow } from "./AuthFlowContext";
-import { AuthFlowError } from "@authflow/js";
+import { AuthFlowError } from "@meet_patel_03/authflow-js";
 
 export type CallbackStatus = "loading" | "success" | "error";
 

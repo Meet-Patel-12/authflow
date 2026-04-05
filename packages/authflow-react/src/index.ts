@@ -19,4 +19,4 @@ export type {
   AuthFlowConfig,
   TokenSet,
   AuthFlowError,
-} from "@authflow/js";
+} from "@meet_patel_03/authflow-js";

@@ -1,11 +1,11 @@
-# @meet_patel_12/authflow-node
+# @meet_patel_03/authflow-node
 
 Server-side SDK for AuthFlow — token exchange, verification, and middleware for Node.js/Express and Next.js. Handles authorization code exchange, token refresh, id_token verification, and Bearer token validation.
 
 ## Installation
 
 ```bash
-npm install @meet_patel_12/authflow-node
+npm install @meet_patel_03/authflow-node
 ```
 
 Requirements:
@@ -29,7 +29,7 @@ import {
   createSessionRefreshMiddleware,
   requireAuth,
   AuthFlowNodeError,
-} from "@meet_patel_12/authflow-node";
+} from "@meet_patel_03/authflow-node";
 
 // Configure session store (example: memory store for dev, use proper store in production)
 const app = express();
@@ -174,7 +174,7 @@ app.listen(3000, () => {
 
 ```ts
 // app/api/me/route.ts
-import { AuthFlowNodeClient, getServerUser } from "@meet_patel_12/authflow-node";
+import { AuthFlowNodeClient, getServerUser } from "@meet_patel_03/authflow-node";
 
 const authflow = new AuthFlowNodeClient({ ... });
 
@@ -186,7 +186,7 @@ export async function GET(req: Request) {
 
 // app/login/route.ts
 import { cookies, redirect } from "next/headers";
-import { generateCodeVerifier, generateCodeChallenge, generateState, AuthFlowNodeClient } from "@meet_patel_12/authflow-node";
+import { generateCodeVerifier, generateCodeChallenge, generateState, AuthFlowNodeClient } from "@meet_patel_03/authflow-node";
 
 const authflow = new AuthFlowNodeClient({
   domain: process.env.AUTHFLOW_DOMAIN!,
@@ -206,7 +206,7 @@ export async function GET() {
 
 // app/callback/route.ts
 import { cookies, redirect } from "next/headers";
-import { AuthFlowNodeClient, AuthFlowNodeError } from "@meet_patel_12/authflow-node";
+import { AuthFlowNodeClient, AuthFlowNodeError } from "@meet_patel_03/authflow-node";
 
 const authflow = new AuthFlowNodeClient({
   domain: process.env.AUTHFLOW_DOMAIN!,
@@ -590,7 +590,7 @@ Next.js helper to extract and verify the authenticated user from a Request.
 **Returns:** `AuthFlowUser | null` — null if no token is found or verification fails.
 
 ```ts
-import { getServerUser } from "@meet_patel_12/authflow-node";
+import { getServerUser } from "@meet_patel_03/authflow-node";
 
 export async function GET(req: Request) {
   const user = await getServerUser(req, authflow);
@@ -606,7 +606,7 @@ export async function GET(req: Request) {
 The SDK exports `AuthFlowNodeError` for OAuth2 and authentication failures:
 
 ```ts
-import { AuthFlowNodeError } from "@meet_patel_12/authflow-node";
+import { AuthFlowNodeError } from "@meet_patel_03/authflow-node";
 
 try {
   await authflow.exchangeCode(code, verifier);

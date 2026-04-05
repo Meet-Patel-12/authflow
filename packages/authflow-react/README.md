@@ -1,23 +1,23 @@
-# @meet_patel_12/authflow-react
+# @meet_patel_03/authflow-react
 
 React SDK for AuthFlow — hooks and provider for the Authorization Code + PKCE flow. Includes state management, automatic token refresh, and session persistence.
 
 ## Installation
 
 ```bash
-npm install @meet_patel_12/authflow-react @meet_patel_12/authflow-js
+npm install @meet_patel_03/authflow-react @meet_patel_03/authflow-js
 ```
 
 Requirements:
 
 - React 18+
-- `@meet_patel_12/authflow-js` (peer dependency)
+- `@meet_patel_03/authflow-js` (peer dependency)
 
 ## Quick start
 
 ```tsx
 // main.tsx — wrap your app with AuthFlowProvider
-import { AuthFlowProvider } from "@meet_patel_12/authflow-react";
+import { AuthFlowProvider } from "@meet_patel_03/authflow-react";
 import { App } from "./App";
 
 export default function Root() {
@@ -35,7 +35,7 @@ export default function Root() {
 }
 
 // components/navbar.tsx — use hooks in any component
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 
 export function Navbar() {
   const { user, isAuthenticated, isLoading, loginWithRedirect, logout } =
@@ -69,7 +69,7 @@ export function Navbar() {
 }
 
 // components/protected-route.tsx — protect routes
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 import { ReactNode } from "react";
 import { Navigate } from "react-router";
 
@@ -83,7 +83,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 }
 
 // pages/callback.tsx — handle OAuth redirect
-import { useAuthCallback } from "@meet_patel_12/authflow-react";
+import { useAuthCallback } from "@meet_patel_03/authflow-react";
 import { useNavigate } from "react-router";
 
 export function CallbackPage() {
@@ -117,7 +117,7 @@ export function CallbackPage() {
 }
 
 // pages/dashboard.tsx — access user and tokens
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 
 export function DashboardPage() {
   const { user, getAccessToken } = useAuthFlow();
@@ -177,7 +177,7 @@ Wraps your app and provides authentication context. Initialize this **once** at 
 - Provides context values to all child components
 
 ```tsx
-import { AuthFlowProvider } from "@meet_patel_12/authflow-react";
+import { AuthFlowProvider } from "@meet_patel_03/authflow-react";
 
 export function App() {
   return (
@@ -229,7 +229,7 @@ Primary hook — provides access to authentication state and actions. Must be us
 **Throws:** If used outside `<AuthFlowProvider>`.
 
 ```ts
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 
 function MyComponent() {
   const { user, isLoading, isAuthenticated, loginWithRedirect } = useAuthFlow();
@@ -333,7 +333,7 @@ Convenience hook — returns just the current user without needing the full `use
 **Returns:** `AuthFlowUser | null`
 
 ```ts
-import { useUser } from "@meet_patel_12/authflow-react";
+import { useUser } from "@meet_patel_03/authflow-react";
 
 function UserCard() {
   const user = useUser();
@@ -371,7 +371,7 @@ Handles the OAuth2 redirect callback. Drop this in your `/callback` route compon
 **Important:** This hook guards against React 18 StrictMode double-execution, so the token exchange runs exactly once even in development.
 
 ```ts
-import { useAuthCallback } from "@meet_patel_12/authflow-react";
+import { useAuthCallback } from "@meet_patel_03/authflow-react";
 import { useNavigate } from "react-router-dom";
 
 function CallbackPage() {
@@ -421,7 +421,7 @@ Higher-Order Component that protects a route from unauthenticated access.
 **Returns:** Wrapped component
 
 ```ts
-import { withAuthRequired } from "@meet_patel_12/authflow-react";
+import { withAuthRequired } from "@meet_patel_03/authflow-react";
 
 function DashboardPage() {
   const { user } = useAuthFlow();
@@ -437,11 +437,11 @@ export default withAuthRequired(DashboardPage);
 
 ## Error Handling
 
-Use `AuthFlowError` from `@meet_patel_12/authflow-js` for detailed error handling:
+Use `AuthFlowError` from `@meet_patel_03/authflow-js` for detailed error handling:
 
 ```ts
-import { useAuthCallback } from "@meet_patel_12/authflow-react";
-import { AuthFlowError } from "@meet_patel_12/authflow-js";
+import { useAuthCallback } from "@meet_patel_03/authflow-react";
+import { AuthFlowError } from "@meet_patel_03/authflow-js";
 
 function CallbackPage() {
   const { status, error } = useAuthCallback({
@@ -462,7 +462,7 @@ Common error scenarios:
 
 ## Types
 
-The SDK exports all types from `@meet_patel_12/authflow-js`:
+The SDK exports all types from `@meet_patel_03/authflow-js`:
 
 - **`AuthFlowUser`** — User claims (sub, email, name, email_verified, custom fields)
 - **`AuthFlowConfig`** — Provider configuration
@@ -478,7 +478,7 @@ import type {
   AuthFlowConfig,
   TokenSet,
   AuthFlowError,
-} from "@meet_patel_12/authflow-react";
+} from "@meet_patel_03/authflow-react";
 ```
 
 ## Common Patterns
@@ -486,7 +486,7 @@ import type {
 ### Protected Route Component
 
 ```tsx
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 import { Navigate, useLocation } from "react-router-dom";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -522,7 +522,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 ### API Client with Auto-Refresh
 
 ```ts
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 
 export function useApi() {
   const { getAccessToken } = useAuthFlow();
@@ -566,7 +566,7 @@ function MyComponent() {
 ### Conditional Navigation
 
 ```tsx
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 import { useNavigate } from "react-router-dom";
 
 function LoginPrompt() {
@@ -592,7 +592,7 @@ function LoginPrompt() {
 ### Loading States
 
 ```tsx
-import { useAuthFlow } from "@meet_patel_12/authflow-react";
+import { useAuthFlow } from "@meet_patel_03/authflow-react";
 
 function RootLayout() {
   const { isLoading } = useAuthFlow();

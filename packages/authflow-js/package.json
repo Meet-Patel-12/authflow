@@ -1,23 +1,23 @@
 {
-  "name": "@meet_patel_12/authflow-js",
-  "version": "0.1.0",
+  "name": "@meet_patel_03/authflow-js",
+  "version": "0.1.2",
   "description": "AuthFlow SDK for browser-based single-page applications",
-  "main": "./dist/index.cjs",
+  "type": "module",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
     "test": "vitest run"
   },
   "devDependencies": {
@@ -36,5 +36,9 @@
   ],
   "license": "MIT",
   "sideEffects": false,
-  "author": ""
+  "author": "Meet Patel (https://github.com/Meet-Patel-12)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Meet-Patel-12/AuthFlow"
+  }
 }

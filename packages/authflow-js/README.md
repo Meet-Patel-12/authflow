@@ -1,17 +1,17 @@
-# @meet_patel_12/authflow-js
+# @meet_patel_03/authflow-js
 
 Vanilla JS/TypeScript SDK for AuthFlow — Authorization Code + PKCE flow for browser SPAs. Implements OAuth2/OIDC with PKCE security, automatic token refresh, and localStorage persistence.
 
 ## Installation
 
 ```bash
-npm install @meet_patel_12/authflow-js
+npm install @meet_patel_03/authflow-js
 ```
 
 ## Quick start
 
 ```ts
-import { AuthFlowClient, AuthFlowError } from "@meet_patel_12/authflow-js";
+import { AuthFlowClient, AuthFlowError } from "@meet_patel_03/authflow-js";
 
 const auth = new AuthFlowClient({
   domain: "https://your-authflow-domain.com",
@@ -197,7 +197,7 @@ await auth.logout({ returnTo: "https://your-app.com/goodbye" });
 The SDK exports `AuthFlowError` for handling OAuth2 and authentication errors:
 
 ```ts
-import { AuthFlowError } from "@meet_patel_12/authflow-js";
+import { AuthFlowError } from "@meet_patel_03/authflow-js";
 
 try {
   await auth.handleRedirectCallback();

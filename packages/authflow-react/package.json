@@ -1,28 +1,28 @@
 {
-  "name": "@meet_patel_12/authflow-react",
-  "version": "0.1.0",
+  "name": "@meet_patel_03/authflow-react",
+  "version": "0.1.2",
   "description": "AuthFlow React SDK — hooks and provider for the Authorization Code + PKCE flow",
-  "main": "./dist/index.cjs",
+  "type": "module",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean --external react",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch --external react",
+    "build": "tsup src/index.ts --format esm --dts --clean --external react,@meet_patel_03/authflow-js",
+    "dev": "tsup src/index.ts --format esm --dts --watch --external react,@meet_patel_03/authflow-js",
     "test": "vitest run"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "@meet_patel_12/authflow-js": "^0.1.0"
+    "@meet_patel_03/authflow-js": "^0.1.1"
   },
   "devDependencies": {
     "@testing-library/react": "^14.0.0",
@@ -31,7 +31,7 @@
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0",
-    "@meet_patel_12/authflow-js": "file:../authflow-js"
+    "@meet_patel_03/authflow-js": "file:../authflow-js"
   },
   "keywords": [
     "authflow",
@@ -42,5 +42,10 @@
     "auth"
   ],
   "license": "MIT",
-  "sideEffects": false
+  "sideEffects": false,
+  "author": "Meet Patel (https://github.com/Meet-Patel-12)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Meet-Patel-12/AuthFlow"
+  }
 }

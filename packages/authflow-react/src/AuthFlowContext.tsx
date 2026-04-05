@@ -6,8 +6,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { AuthFlowClient } from "@authflow/js";
-import type { AuthFlowConfig, AuthFlowUser, TokenSet } from "@authflow/js";
+import { AuthFlowClient } from "@meet_patel_03/authflow-js";
+import type {
+  AuthFlowConfig,
+  AuthFlowUser,
+  TokenSet,
+} from "@meet_patel_03/authflow-js";
 
 // ─── Context shape ────────────────────────────────────────────────────────────
 
