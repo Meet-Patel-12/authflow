@@ -24,12 +24,12 @@ export const TTL = {
 export const RATE_LIMITS = {
   AUTH: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5,
+    max: 10,
     message: "Too many login attempts, please try again in 15 minutes",
   },
   STRICT_AUTH: {
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3,
+    max: 5,
     message: "Too many attempts, please try again in 1 hour",
   },
   API: {

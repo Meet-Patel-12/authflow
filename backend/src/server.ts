@@ -67,7 +67,7 @@ const startServer = async () => {
       console.log(DIVIDER);
     });
 
-    // ─── Graceful Shutdown ──────────────────────────────────────────────────
+    // ─── Graceful Shutdown
 
     const shutdown = async (signal: string) => {
       console.log(`\n${signal} received — shutting down gracefully...`);
