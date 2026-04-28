@@ -6,7 +6,10 @@ import { auditLogger } from "./middlewares/audit.middleware";
 import { errorHandler } from "./middlewares/error.middleware";
 import { requestIdMiddleware } from "./middlewares/requestId.middleware";
 import { registerRoutes } from "./app.routes";
-import { findActiveApplicationByClientId } from "./repositories/application.repository";
+import {
+  findActiveApplicationByClientId,
+  findApplicationByOrigin,
+} from "./repositories/application.repository";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
@@ -172,6 +175,26 @@ const corsHandler = async (
         }
         return next();
       }
+    }
+
+    // Check if origin is registered in any active application
+    const applicationByOrigin = await findApplicationByOrigin(origin);
+    if (applicationByOrigin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+
+      if (req.method === "OPTIONS") {
+        res.setHeader(
+          "Access-Control-Allow-Methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        );
+        res.setHeader(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
+        );
+        return res.sendStatus(204);
+      }
+      return next();
     }
   } catch (err) {
     console.error("Error validating CORS origin:", err);

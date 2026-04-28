@@ -8,6 +8,15 @@ export const findActiveApplicationByClientId = async (
   );
 };
 
+export const findApplicationByOrigin = async (
+  origin: string,
+): Promise<IApplication | null> => {
+  return Application.findOne({
+    isActive: true,
+    allowedOrigins: origin,
+  });
+};
+
 export const findOrgApplications = async (organizationId: string) => {
   return Application.find({ organizationId, isActive: true }).sort({
     createdAt: -1,
