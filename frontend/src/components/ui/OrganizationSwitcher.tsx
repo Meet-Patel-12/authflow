@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronDown, Plus } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { switchToValidOrg } from "../../features/organizations/organizationSlice";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { switchToValidOrg } from "../../store/organizationSlice";
 import { toast } from "sonner";
 
 export default function OrganizationSwitcher() {

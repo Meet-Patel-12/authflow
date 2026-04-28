@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, LogOut, Settings, User } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { logout } from "../../features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { logout } from "../../store/authSlice";
 import OrganizationSwitcher from "../ui/OrganizationSwitcher";
 import { toast } from "sonner";
 import { AvatarBubble } from "../ui";

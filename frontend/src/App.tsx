@@ -2,54 +2,50 @@ import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
-import { useAppDispatch, useAppSelector } from "./app/hooks";
-import {
-  getCurrentUser,
-  setUserFromToken,
-  logout,
-} from "./features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { getCurrentUser, setUserFromToken, logout } from "./store/authSlice";
 import { getUserFromToken, isTokenExpired } from "./app/jwtUtils";
-import { fetchOrganizations } from "./features/organizations/organizationSlice";
+import { fetchOrganizations } from "./store/organizationSlice";
 
 import ProtectedRoute from "./app/ProtectedRoute";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 
 /* Pages */
-import Login from "./features/auth/pages/Login";
-import Register from "./features/auth/pages/Register";
-import ForgotPassword from "./features/auth/pages/ForgotPassword";
-import ResetPassword from "./features/auth/pages/ResetPassword";
-import VerifyEmail from "./features/auth/pages/VerifyEmail";
-import MFALogin from "./features/mfa/pages/MFALogin";
-import OAuthCallback from "./features/auth/pages/OAuthCallback";
-import MagicLinkVerify from "./features/auth/pages/MagicLinkVerify";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import MFALogin from "./pages/mfa/MFALogin";
+import OAuthCallback from "./pages/auth/OAuthCallback";
+import MagicLinkVerify from "./pages/auth/MagicLinkVerify";
 
-import Dashboard from "./features/dashboard/pages/Dashboard";
-import Profile from "./features/settings/pages/Profile";
-import Settings from "./features/settings/pages/Settings";
-import Security from "./features/settings/pages/Security";
-import Sessions from "./features/settings/pages/Sessions";
-import Organizations from "./features/organizations/pages/Organizations";
-import ApiKeys from "./features/apiKeys/pages/ApiKeys";
-import MFASetup from "./features/mfa/pages/MFASetup";
-import AuditLogs from "./features/auditLogs/pages/AuditLogs";
-import SDKAnalytics from "./features/sdkAnalytics/pages/SDKAnalytics";
-import Members from "./features/organizations/pages/Members";
-import AcceptInvite from "./features/organizations/pages/AcceptInvite";
-import DeveloperIntegration from "./features/developers/pages/DeveloperIntegration";
-import Webhooks from "./features/webhooks/pages/Webhooks";
-import Applications from "./features/application/pages/Application";
-import ApplicationDetail from "./features/application/pages/ApplicationDetail";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Profile from "./pages/settings/Profile";
+import Settings from "./pages/settings/Settings";
+import Security from "./pages/settings/Security";
+import Sessions from "./pages/settings/Sessions";
+import Organizations from "./pages/organizations/Organizations";
+import ApiKeys from "./pages/apiKey/ApiKeys";
+import MFASetup from "./pages/mfa/MFASetup";
+import AuditLogs from "./pages/auditLogs/AuditLogs";
+import SDKAnalytics from "./pages/sdkAnalytics/SDKAnalytics";
+import Members from "./pages/organizations/Members";
+import AcceptInvite from "./pages/organizations/AcceptInvite";
+import DeveloperIntegration from "./pages/developers/DeveloperIntegration";
+import Webhooks from "./pages/webhooks/Webhooks";
+import Applications from "./pages/application/Application";
+import ApplicationDetail from "./pages/application/ApplicationDetail";
 
 // ── Universal Login (OAuth2 hosted pages — standalone, no DashboardLayout)
-import UniversalLogin from "./features/universalLogin/pages/UniversalLogin";
-import HomePage from "./features/home/HomePage";
-import UniversalSignup from "./features/universalLogin/pages/UniversalSignup";
-import LoginCallback from "./features/universalLogin/pages/LoginCallback";
+import UniversalLogin from "./pages/universalLogin/UniversalLogin";
+import HomePage from "./pages/home/HomePage";
+import UniversalSignup from "./pages/universalLogin/UniversalSignup";
+import LoginCallback from "./pages/universalLogin/LoginCallback";
 
 /* Admin */
-import AdminDashboard from "./features/admin/pages/Dashboard";
-import SDKEndUsers from "./features/admin/pages/SDKEndUsers";
+import AdminDashboard from "./pages/admin/Dashboard";
+import SDKEndUsers from "./pages/admin/SDKEndUsers";
 
 function App() {
   const dispatch = useAppDispatch();

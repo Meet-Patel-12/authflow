@@ -1,8 +1,8 @@
 import type React from "react";
 import { Navigate } from "react-router-dom";
-import { useAppSelector, useAppDispatch } from "./hooks";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
 import { isTokenExpired } from "./jwtUtils";
-import { logout } from "../features/auth/authSlice";
+import { logout } from "../store/authSlice";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

@@ -8,7 +8,7 @@ import {
   Info,
   AlertTriangle,
 } from "lucide-react";
-import type { User as UserType } from "../../shared/types/global.types";
+import type { User as UserType } from "../../types/global.types";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    AvatarBubble — declared at MODULE level, never inside a render function.

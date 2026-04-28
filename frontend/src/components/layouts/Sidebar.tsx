@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useAppSelector } from "../../app/hooks";
+import { useAppSelector } from "../../store/hooks";
 import {
   AppWindow,
   BarChart3,
