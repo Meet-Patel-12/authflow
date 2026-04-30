@@ -53,43 +53,42 @@ app.use(
     hidePoweredBy: true,
     noSniff: true,
     referrerPolicy: { policy: "no-referrer-when-downgrade" },
-    xssFilter: true,
   }),
 );
 
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-// Dynamic CORS configuration based on application settings.
-// - FRONTEND_URL is always allowed
-// - Application-specific allowed origins from the database (when client_id is provided)
-// - Localhost ports allowed in development
-// Clients specify their application via client_id query param, body, or X-Client-Id header
 
 const getStaticAllowedOrigins = (): string[] => {
-  const origins: string[] = [];
-
-  if (process.env.ALLOWED_ORIGINS) {
-    origins.push(
-      ...process.env.ALLOWED_ORIGINS.split(",")
-        .map((o) => o.trim())
-        .filter(Boolean),
-    );
-  }
-
-  if (process.env.FRONTEND_URL) {
-    origins.push(process.env.FRONTEND_URL.trim());
-  }
-
-  // Common localhost ports for developer testing
-  const devPorts = [3000, 3001, 4000, 4173, 5173, 5174, 8080, 8000];
-  for (const port of devPorts) {
-    origins.push(`http://localhost:${port}`);
-    origins.push(`http://127.0.0.1:${port}`);
-  }
-
-  return [...new Set(origins)];
+  const raw = [
+    ...(process.env.ALLOWED_ORIGINS?.split(",") ?? []),
+    process.env.FRONTEND_URL ?? "",
+  ];
+  return [...new Set(raw.map((o) => o.trim()).filter(Boolean))];
 };
 
 const staticAllowedOrigins = getStaticAllowedOrigins();
+
+const applyCors = (
+  res: express.Response,
+  origin: string,
+  isOptions: boolean,
+) => {
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  if (isOptions) {
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
+    );
+  }
+};
 
 // Custom CORS handler with dynamic application-based validation
 const corsHandler = async (
@@ -100,106 +99,34 @@ const corsHandler = async (
   const origin = req.headers.origin;
 
   // Continue if no origin (same-origin requests)
-  if (!origin) {
-    return next();
-  }
+  if (!origin) return next();
+
+  const isOptions = req.method === "OPTIONS";
+  const allow = () => {
+    applyCors(res, origin, isOptions);
+    return isOptions ? res.sendStatus(204) : next();
+  };
 
   // Always allow static origins
-  if (staticAllowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-
-    if (req.method === "OPTIONS") {
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
-      );
-      return res.sendStatus(204);
-    }
-    return next();
-  }
-
-  // Allow all origins in development
-  if (!IS_PRODUCTION) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-
-    if (req.method === "OPTIONS") {
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
-      );
-      return res.sendStatus(204);
-    }
-    return next();
-  }
+  if (staticAllowedOrigins.includes(origin) || !IS_PRODUCTION) return allow();
 
   // Production: Check application-specific origins
   try {
     const clientId =
       (req.query.client_id as string) ||
       (req.query.clientId as string) ||
-      ((req.body as any)?.client_id as string) ||
-      ((req.body as any)?.clientId as string) ||
+      (req.body?.client_id as string) ||
+      (req.body?.clientId as string) ||
       (req.headers["x-client-id"] as string);
 
-    if (clientId) {
-      const application = await findActiveApplicationByClientId(clientId);
+    const application = clientId
+      ? await findActiveApplicationByClientId(clientId)
+      : await findApplicationByOrigin(origin);
 
-      if (
-        application &&
-        application.allowedOrigins &&
-        application.allowedOrigins.includes(origin)
-      ) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-
-        if (req.method === "OPTIONS") {
-          res.setHeader(
-            "Access-Control-Allow-Methods",
-            "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-          );
-          res.setHeader(
-            "Access-Control-Allow-Headers",
-            "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
-          );
-          return res.sendStatus(204);
-        }
-        return next();
-      }
-    }
-
-    // Check if origin is registered in any active application
-    const applicationByOrigin = await findApplicationByOrigin(origin);
-    if (applicationByOrigin) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-
-      if (req.method === "OPTIONS") {
-        res.setHeader(
-          "Access-Control-Allow-Methods",
-          "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-        );
-        res.setHeader(
-          "Access-Control-Allow-Headers",
-          "Content-Type, Authorization, X-API-Key, X-Client-Id, X-Organization-Id, X-Request-Id",
-        );
-        return res.sendStatus(204);
-      }
-      return next();
-    }
+    if (application?.allowedOrigins?.includes(origin)) return allow();
   } catch (err) {
     console.error("Error validating CORS origin:", err);
   }
-
   // Origin not allowed
   return res.status(403).json({
     error: "CORS",
@@ -208,9 +135,6 @@ const corsHandler = async (
 };
 
 app.use(corsHandler);
-
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(
   session({

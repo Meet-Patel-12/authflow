@@ -1,5 +1,7 @@
 import { Application, Request, Response } from "express";
+import { body, query } from "express-validator";
 import { apiRateLimiter } from "./middlewares/rateLimit.middleware";
+import { validate } from "./middlewares/validation.middleware";
 import { API_DOCS } from "./app.docs";
 
 // Route modules
@@ -44,10 +46,51 @@ export function registerRoutes(app: Application): void {
   );
 
   // ─── OAuth2 root-level endpoints (must NOT be under /api) ────────────────────
-  app.get("/authorize", authorizeHandler);
-  app.post("/oauth/token", tokenHandler);
-  app.post("/oauth/refresh", refreshHandler);
-  app.post("/oauth/logout", logoutHandler);
+  app.get(
+    "/authorize",
+    [
+      query("client_id").notEmpty().withMessage("client_id is required"),
+      query("redirect_uri").notEmpty().withMessage("redirect_uri is required"),
+      query("response_type")
+        .notEmpty()
+        .withMessage("response_type is required"),
+    ],
+    validate,
+    authorizeHandler,
+  );
+
+  app.post(
+    "/oauth/token",
+    [
+      body("grant_type").notEmpty().withMessage("grant_type is required"),
+      body("code").notEmpty().withMessage("code is required"),
+      body("client_id").notEmpty().withMessage("client_id is required"),
+      body("redirect_uri").notEmpty().withMessage("redirect_uri is required"),
+    ],
+    validate,
+    tokenHandler,
+  );
+
+  app.post(
+    "/oauth/refresh",
+    [
+      body("grant_type").notEmpty().withMessage("grant_type is required"),
+      body("refresh_token").notEmpty().withMessage("refresh_token is required"),
+      body("client_id").notEmpty().withMessage("client_id is required"),
+    ],
+    validate,
+    refreshHandler,
+  );
+
+  app.post(
+    "/oauth/logout",
+    [
+      body("client_id").notEmpty().withMessage("client_id is required"),
+      body("refresh_token").notEmpty().withMessage("refresh_token is required"),
+    ],
+    validate,
+    logoutHandler,
+  );
 
   // ─── OIDC discovery (must be at root — standard paths clients expect) ─────────
   app.get("/.well-known/openid-configuration", discoveryHandler);

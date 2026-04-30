@@ -73,10 +73,6 @@ export const verifyPKCE = (
 export const validateAuthorizeRequest = async (
   params: AuthorizeParams,
 ): Promise<ValidateAuthorizeResult> => {
-  // Trim whitespace from string params before any validation.
-  // Accidental spaces encoded as %20 in URLs (e.g. "code%20", "callback%20")
-  // arrive here already decoded by Express — trimming catches them before
-  // the === "code" check and includes() lookup would silently fail.
   const responseType = (params.responseType ?? "").trim();
   const redirectUri = (params.redirectUri ?? "").trim();
   const clientId = (params.clientId ?? "").trim();

@@ -3,17 +3,12 @@ import axios from "axios";
 // Use a plain axios instance — NOT the main api client.
 // The main api client attaches Authorization headers and org headers
 // which would interfere with this public OAuth2 flow.
-// The base URL points to the backend root, not /api.
 
-const BASE_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api"
-).replace(/\/api$/, "");
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const publicApi = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
-  // 8 second timeout — if the backend is unreachable the user should see
-  // an error quickly rather than watching the spinner indefinitely.
   timeout: 8000,
 });
 
@@ -26,10 +21,17 @@ export interface AppInfo {
 }
 
 export const fetchAppInfo = async (clientId: string): Promise<AppInfo> => {
-  const res = await publicApi.get("/api/oauth2/app-info", {
-    params: { client_id: clientId },
-  });
-  return res.data.data;
+  try {
+    const res = await publicApi.get("/oauth2/app-info", {
+      params: { client_id: clientId },
+    });
+    return res.data;
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      throw new Error("Application not found. Check your client_id.");
+    }
+    throw new Error("Unable to load application info. Please try again.");
+  }
 };
 
 // ─── Complete Login ───────────────────────────────────────────────────────────
@@ -52,7 +54,7 @@ export interface CompleteLoginResult {
 export const completeLogin = async (
   params: CompleteLoginParams,
 ): Promise<CompleteLoginResult> => {
-  const res = await publicApi.post("/api/oauth2/complete-login", params);
+  const res = await publicApi.post("/oauth2/complete-login", params);
   return res.data;
 };
 
@@ -65,6 +67,6 @@ export interface CompleteRegisterParams extends CompleteLoginParams {
 export const completeRegister = async (
   params: CompleteRegisterParams,
 ): Promise<CompleteLoginResult> => {
-  const res = await publicApi.post("/api/oauth2/complete-register", params);
+  const res = await publicApi.post("/oauth2/complete-register", params);
   return res.data;
 };

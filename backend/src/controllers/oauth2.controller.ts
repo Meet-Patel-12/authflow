@@ -498,7 +498,12 @@ export const appInfoHandler = async (
       return;
     }
 
-    res.status(200).json({ success: true, data: result });
+    res
+      .status(200)
+      .json({
+        success: true,
+        data: { name: result.name, logo: result.logo, type: result.type },
+      });
   } catch (error: any) {
     console.error("appInfo error:", error);
     res

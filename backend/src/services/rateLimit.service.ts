@@ -4,11 +4,11 @@ import { IApiKey } from "../models/apiKey.model";
 export interface RateLimitResult {
   allowed: boolean;
   current: number;
+  dailyCurrent?: number;
   message?: string;
   limit?: number;
   retryAfter?: number;
 }
-
 export const checkRateLimit = async (
   key: string,
   max: number,
@@ -60,5 +60,5 @@ export const checkApiKeyRateLimit = async (
     };
   }
 
-  return { allowed: true, current: hourlyCount };
+  return { allowed: true, current: hourlyCount, dailyCurrent: dailyCount };
 };

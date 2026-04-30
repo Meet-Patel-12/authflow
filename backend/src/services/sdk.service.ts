@@ -74,7 +74,7 @@ export const sdkRegister = async (data: {
       success: false,
       status: 403,
       error: "user_limit_reached",
-      message: `User limit reached. Your plan allows ${org.limits.maxUsers} users.`,
+      message: `User limit reached. Your ${org.billing.plan} plan allows ${org.limits.maxUsers} users.`,
     };
   }
 

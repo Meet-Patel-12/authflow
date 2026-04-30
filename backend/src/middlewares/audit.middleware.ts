@@ -17,12 +17,3 @@ export const auditLogger = (
 
   next();
 };
-
-// ─── Selective Audit Logger ───────────────────────────────────────────────────
-
-export const auditLoggerFor = (...patterns: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const matches = patterns.some((pattern) => req.path.includes(pattern));
-    return matches ? auditLogger(req, res, next) : next();
-  };
-};

@@ -65,7 +65,7 @@ const organizationSchema = new Schema<IOrganization>(
     },
 
     limits: {
-      maxUsers: { type: Number, default: 5 },
+      maxUsers: { type: Number, default: 100 },
       maxApiKeys: { type: Number, default: 2 },
       maxApiCalls: { type: Number, default: 10000 },
     },

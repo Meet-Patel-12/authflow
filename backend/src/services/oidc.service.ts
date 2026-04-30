@@ -174,7 +174,7 @@ export const buildJWKS = () => {
 // ─── OIDC discovery document ─────────────────────────────────────────────────
 
 export const buildDiscoveryDocument = () => {
-  const issuer = process.env.APP_URL ?? "http://localhost:3000";
+  const issuer = process.env.APP_URL ?? "http://localhost:5000";
 
   return {
     issuer,

@@ -9,6 +9,7 @@ import {
   setApiKeyRateLimitHeaders,
   IS_PRODUCTION,
 } from "../utils/rateLimit.util";
+import { RATE_LIMITS } from "../constants/constants";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,22 +63,17 @@ export const createRateLimiter = (options: RateLimitOptions) => {
 // ─── Predefined Limiters ──────────────────────────────────────────────────────
 
 export const authRateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: "Too many login attempts, please try again in 15 minutes",
+  ...RATE_LIMITS.AUTH,
   keyGenerator: keyGenerators.byIpSuffix("auth"),
 });
 
 export const strictAuthRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,
-  max: 3,
-  message: "Too many password reset attempts, please try again in 1 hour",
+  ...RATE_LIMITS.STRICT_AUTH,
   keyGenerator: keyGenerators.byIpSuffix("password-reset"),
 });
 
 export const apiRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,
-  max: 100,
+  ...RATE_LIMITS.API,
   keyGenerator: keyGenerators.byUserOrIp,
 });
 
@@ -99,7 +95,7 @@ export const apiKeyRateLimiter = async (
       apiKey.rateLimit.requestsPerHour,
       result.current,
       apiKey.rateLimit.requestsPerDay,
-      result.current,
+      result.dailyCurrent ?? result.current,
     );
 
     if (!result.allowed) {
