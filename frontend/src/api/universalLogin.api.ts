@@ -25,7 +25,7 @@ export const fetchAppInfo = async (clientId: string): Promise<AppInfo> => {
     const res = await publicApi.get("/oauth2/app-info", {
       params: { client_id: clientId },
     });
-    return res.data;
+    return res.data.data;
   } catch (err) {
     if (axios.isAxiosError(err) && err.response?.status === 404) {
       throw new Error("Application not found. Check your client_id.");
